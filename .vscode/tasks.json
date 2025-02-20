@@ -1,0 +1,23 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build streamlit image",
+            "type": "shell",
+            "command": "docker build -t llmchat-frontend:latest ./streamlit",
+            "problemMatcher": []
+        },
+        {
+            "label": "Run streamlit container",
+            "type": "shell",
+            "command": "docker run -it --rm --name streamlit_test --net=host -p 8501:8501 llmchat-frontend:latest",
+            "problemMatcher": []
+        },
+        {
+            "label": "Stop streamlit container",
+            "type": "shell",
+            "command": "docker container stop streamlit_test",
+            "problemMatcher": []
+        }
+    ]
+}
