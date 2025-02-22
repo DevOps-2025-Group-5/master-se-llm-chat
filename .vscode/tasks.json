@@ -18,6 +18,24 @@
             "type": "shell",
             "command": "docker container stop streamlit_test",
             "problemMatcher": []
+        },
+        {
+            "label": "Build flask-cognito image",
+            "type": "shell",
+            "command": "docker build -t flask-cognito:latest ./flask-cognito",
+            "problemMatcher": []
+        },
+        {
+            "label": "Run flask-cognito container",
+            "type": "shell",
+            "command": "docker run -it --rm --name flask-cognito --net=host -p 5000:5000 flask-cognito:latest",
+            "problemMatcher": []
+        },
+        {
+            "label": "Stop flask-cognito container",
+            "type": "shell",
+            "command": "docker container stop flask-cognito",
+            "problemMatcher": []
         }
     ]
 }
