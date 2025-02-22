@@ -4,12 +4,12 @@ import boto3
 from botocore.exceptions import NoCredentialsError
 
 # AWS Cognito Configuration
-COGNITO_USER_POOL_ID = "your-user-pool-id"
-COGNITO_CLIENT_ID = "your-app-client-id"
+COGNITO_USER_POOL_ID = "eu-central-1_iHr5Kn0ih"
+COGNITO_CLIENT_ID = "5d9ljgnlhob8r5bgdu1hqg1f2d"
 BACKEND_API_URL = "https://your-backend-api.com/chat"
 
 # Initialize Cognito client
-client = boto3.client("cognito-idp", region_name="your-region")
+client = boto3.client("cognito-idp", region_name="eu-central-1")
 
 def authenticate_user(username, password):
     try:
