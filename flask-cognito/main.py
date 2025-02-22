@@ -25,10 +25,7 @@ def index():
 
 @app.route('/login')
 def login():
-    # Alternate option to redirect to /authorize
-    # redirect_uri = url_for('authorize', _external=True)
-    # return oauth.oidc.authorize_redirect(redirect_uri)
-    return oauth.oidc.authorize_redirect('https://d84l1y8p4kdic.cloudfront.net')
+    return oauth.oidc.authorize_redirect('http://localhost:5000')
 
 @app.route('/authorize')
 def authorize():
