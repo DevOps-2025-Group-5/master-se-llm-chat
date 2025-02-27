@@ -40,7 +40,7 @@ chat_engine = index.as_chat_engine(
     chat_mode="context",
     memory=memory,
     system_prompt=(
-        "Act as an experienced risk and financial policy analyst"
+        "Act as an experienced student advisor"
         "You are now able to intelligently answer questions about the information you have been provided"
     ),
 )
