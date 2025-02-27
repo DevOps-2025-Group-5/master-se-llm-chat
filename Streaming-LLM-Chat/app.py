@@ -5,14 +5,13 @@ from dotenv import load_dotenv
 import webbrowser
 from threading import Timer
 import os
-from llama_index import (
-    ServiceContext,
+from llama_index.core import (
+    Settings,
     VectorStoreIndex,
-    SimpleDirectoryReader,
-    set_global_service_context,
+    SimpleDirectoryReader
 )
-from llama_index.llms import OpenAI
-from llama_index.memory import ChatMemoryBuffer
+from llama_index.llms.openai import OpenAI
+from llama_index.core.memory import ChatMemoryBuffer
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
@@ -26,13 +25,11 @@ if not openai_api_key:
 
 
 # Set up the service context for llama-index with the desired OpenAI model
-service_context = ServiceContext.from_defaults(
-    llm=OpenAI(model="gpt-4", temperature=0)
-)
-set_global_service_context(service_context)
+Settings.llm = OpenAI(model="gpt-4o-mini", temperature=0)
 
 # Load the data from the "data" directory
-data = SimpleDirectoryReader("data").load_data()
+reader = SimpleDirectoryReader(input_dir="data")
+data = reader.load_data()
 
 # Create the index
 index = VectorStoreIndex.from_documents(data)
