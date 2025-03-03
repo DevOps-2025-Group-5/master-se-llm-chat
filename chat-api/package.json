@@ -1,5 +1,5 @@
 {
-  "name": "chat",
+  "name": "student-llm-chat-api",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -13,7 +13,6 @@
     "@langchain/core": "0.3.41",
     "@langchain/langgraph": "0.2.49",
     "@langchain/openai": "0.4.4",
-    "chat": "file:",
     "dotenv": "16.4.7",
     "express": "4.21.2",
     "openai": "4.86.1"
