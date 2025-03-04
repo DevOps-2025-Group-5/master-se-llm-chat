@@ -59,7 +59,7 @@ export const Chat = (user) => {
         }
       }
     }
-
+    console.log("No active conversation");
     return [undefined, undefined];
   }, [activeConversation, getUser]);
 
@@ -103,14 +103,14 @@ export const Chat = (user) => {
           id: "",
           content: response,
           contentType: MessageContentType.TextHtml,
-          senderId: user.id,
+          senderId: "2",
           direction: MessageDirection.Incoming,
           status: MessageStatus.Sent,
         });
         sendMessage({
           message: botMessage,
           conversationId: activeConversation.id,
-          senderId: user.id,
+          senderId: "2", // Bot id
         });
       } catch (error) {
         console.error("Error:", error);

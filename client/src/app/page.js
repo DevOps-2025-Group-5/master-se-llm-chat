@@ -31,9 +31,20 @@ export default function Home() {
     return null;
   }
 
-  const chatAIUser = new User({
+  const loggedInUser = new User({
     id: "1",
-    username: "Chat AI",
+    username: "Me",
+    avatar: "/student.svg",
+    presence: new Presence({ status: UserStatus.Available, description: "" }),
+    firstName: "",
+    lastName: "",
+    email: "",
+    bio: "",
+  });
+
+  const chatAIUser = new User({
+    id: "2",
+    username: "AI Bot",
     avatar: "/bot.svg",
     presence: new Presence({ status: UserStatus.Available, description: "" }),
     firstName: "",
@@ -42,10 +53,18 @@ export default function Home() {
     bio: "",
   });
 
-  const users = [{ name: chatAIUser.username, avatar: chatAIUser.avatar }];
+  const users = [
+    { name: loggedInUser.username, avatar: loggedInUser.avatar },
+    { name: chatAIUser.username, avatar: chatAIUser.avatar },
+  ];
 
   const messageIdGenerator = (message) => nanoid();
   const groupIdGenerator = () => nanoid();
+
+  const userStorage = new BasicStorage({
+    groupIdGenerator,
+    messageIdGenerator,
+  });
 
   const chatAIStorage = new BasicStorage({
     groupIdGenerator,
@@ -56,7 +75,10 @@ export default function Home() {
     return new ExampleChatService(storage, updateState);
   };
 
-  const chats = [{ name: "AI Bot", storage: chatAIStorage }];
+  const chats = [
+    { name: "Me", storage: userStorage },
+    { name: "AI Bot", storage: chatAIStorage },
+  ];
 
   function createConversation(id, name) {
     return new Conversation({
@@ -129,7 +151,7 @@ export default function Home() {
   return (
     <div className="relative h-lvh">
       <ChatProvider
-        storage={chatAIStorage}
+        storage={userStorage}
         serviceFactory={serviceFactory}
         config={{
           typingThrottleTime: 250,
@@ -138,7 +160,7 @@ export default function Home() {
           autoDraft: AutoDraft.Save | AutoDraft.Restore,
         }}
       >
-        <Chat user={chatAIUser} />
+        <Chat user={loggedInUser} />
       </ChatProvider>
     </div>
   );
