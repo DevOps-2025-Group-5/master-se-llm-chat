@@ -1,5 +1,6 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

@@ -10,6 +10,10 @@
   },
   "dependencies": {
     "@chatscope/chat-ui-kit-react": "^2.0.3",
+    "@chatscope/use-chat": "3.1.2",
+    "axios": "1.8.1",
+    "dotenv": "16.4.7",
+    "nanoid": "5.1.2",
     "next": "15.2.0",
     "react": "18.2.0",
     "react-dom": "18.2.0"

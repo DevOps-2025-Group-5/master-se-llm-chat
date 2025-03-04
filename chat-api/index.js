@@ -15,18 +15,23 @@ import {
   AIMessage,
   trimMessages,
 } from "@langchain/core/messages";
+import cors from "cors";
 
 dotenv.config();
 const openaiApiKey = process.env.OPENAI_API_KEY;
-
-const config = { configurable: { thread_id: 1 } };
-
 if (!openaiApiKey) {
   throw new Error("The OPENAI_API_KEY environment variable is not set.");
 }
 
+const corsOptions = {
+  origin: [process.env.CORS_ORIGIN],
+};
+
+const config = { configurable: { thread_id: 1 } };
+
 const app = express();
 app.use(express.json());
+app.use(cors(corsOptions));
 
 const llm = new ChatOpenAI({
   apiKey: openaiApiKey,
@@ -85,8 +90,9 @@ app.post("/chat", async (req, res) => {
   const { newMessage } = req.body;
   try {
     const response = await llmApp.invoke({ messages: newMessage }, config);
+    const responseMessage = response.messages[response.messages.length - 1];
     res.json({
-      message: response.messages[response.messages.length - 1],
+      message: responseMessage.lc_kwargs.content,
     });
   } catch (error) {
     console.error("Error:", error);
