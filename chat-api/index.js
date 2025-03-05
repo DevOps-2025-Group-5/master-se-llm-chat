@@ -8,6 +8,7 @@ import {
   StateGraph,
   MemorySaver,
   Annotation,
+  messagesStateReducer,
 } from "@langchain/langgraph";
 import { pull } from "langchain/hub";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
@@ -77,16 +78,25 @@ const trimmer = trimMessages({
   startOn: "human",
 });
 
-// Define the function that calls the model for the chat
-const callModel = async (state) => {
-  const trimmedMessage = await trimmer.invoke(state.messages);
-  const prompt = await promptTemplate.invoke({
-    messages: trimmedMessage,
-    language: state.language,
-  });
-  const response = await llm.invoke(prompt);
-  return { messages: response };
-};
+// // Define a prompt template for the chat
+// const promptTemplate = ChatPromptTemplate.fromMessages([
+//   [
+//     "system",
+//     "Act as an experienced student assistant. You are now able to intelligently answer questions about the information you have been provided.",
+//   ],
+//   ["placeholder", "{messages}"],
+// ]);
+
+// // Define the function that calls the model for the chat
+// const callModel = async (state) => {
+//   const trimmedMessage = await trimmer.invoke(state.messages);
+//   const prompt = await promptTemplate.invoke({
+//     messages: trimmedMessage,
+//     language: state.language,
+//   });
+//   const response = await llm.invoke(prompt);
+//   return { messages: response };
+// };
 
 // Create a new annotation for the input state
 const InputStateAnnotation = Annotation.Root({
@@ -94,20 +104,15 @@ const InputStateAnnotation = Annotation.Root({
 });
 
 const StateAnnotation = Annotation.Root({
+  messages: Annotation({
+    reducer: messagesStateReducer,
+    default: () => [],
+  }),
   question: Annotation,
   query: Annotation,
   result: Annotation,
   answer: Annotation,
 });
-
-// Define a prompt template for the chat
-const promptTemplate = ChatPromptTemplate.fromMessages([
-  [
-    "system",
-    "Act as an experienced student assistant. You are now able to intelligently answer questions about the information you have been provided.",
-  ],
-  ["placeholder", "{messages}"],
-]);
 
 // Define a prompt template for the SQL query system
 const queryPromptTemplate = await pull("langchain-ai/sql-query-system-prompt");
@@ -132,15 +137,27 @@ const executeQuery = async (state) => {
   return { result: await executeQueryTool.invoke(state.query) };
 };
 
+const answerPromptTemplate = ChatPromptTemplate.fromMessages([
+  [
+    "system",
+    "Act as an experienced student assistant. You are now able to intelligently answer questions about the information you have been provided. Given the following user question, corresponding SQL query, and SQL result, answer the user question.\n\nQuestion: {question}\nSQL Query: {query}\nSQL Result: {result}\n",
+  ],
+  ["placeholder", "{messages}"],
+]);
+
 const generateAnswer = async (state) => {
-  const promptValue =
-    "Given the following user question, corresponding SQL query, " +
-    "and SQL result, answer the user question.\n\n" +
-    `Question: ${state.question}\n` +
-    `SQL Query: ${state.query}\n` +
-    `SQL Result: ${state.result}\n`;
+  const trimmedMessage = await trimmer.invoke(state.messages);
+  const promptValue = await answerPromptTemplate.invoke({
+    messages: trimmedMessage,
+    question: state.question,
+    query: state.query,
+    result: state.result,
+  });
   const response = await llm.invoke(promptValue);
-  return { answer: response.content };
+  return {
+    answer: response.content,
+    messages: response,
+  };
 };
 
 // Define a new graph
@@ -157,8 +174,8 @@ const workflow = new StateGraph({ stateSchema: StateAnnotation })
   .addEdge("generateAnswer", END);
 
 // Add memory
-// const memory = new MemorySaver();
-const llmApp = workflow.compile();
+const memory = new MemorySaver();
+const llmApp = workflow.compile({ checkpointer: memory });
 
 // Start the server on the specified port
 app.listen(PORT, () => {
