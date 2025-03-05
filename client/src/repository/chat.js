@@ -8,7 +8,8 @@ export const sendMessage = async (message) => {
     const response = await axios.post(`${backendEntrypoint}/chat`, {
       newMessage: message,
     });
-    return response.data.message;
+    console.log("Response:", response.data);
+    return response.data.message.answer;
   } catch (error) {
     console.error("Error:", error);
     return "Internal Server Error";

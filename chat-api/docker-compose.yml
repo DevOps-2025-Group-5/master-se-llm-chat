@@ -1,0 +1,15 @@
+version: "3.3"
+services:
+  db:
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: chatdb
+      MYSQL_USER: chatuser
+      MYSQL_PASSWORD: chatpassword
+    ports:
+      - "3306:3306"
+    volumes:
+      - student_llm_chat_data:/var/lib/mysql
+volumes:
+  student_llm_chat_data:
