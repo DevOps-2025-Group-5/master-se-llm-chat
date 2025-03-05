@@ -4,7 +4,6 @@ import { ChatOpenAI } from "@langchain/openai";
 import {
   START,
   END,
-  MessagesAnnotation,
   StateGraph,
   MemorySaver,
   Annotation,
@@ -13,9 +12,6 @@ import {
 import { pull } from "langchain/hub";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
 import {
-  SystemMessage,
-  HumanMessage,
-  AIMessage,
   trimMessages,
 } from "@langchain/core/messages";
 import cors from "cors";
@@ -28,7 +24,7 @@ import { QuerySqlTool } from "langchain/tools/sql";
 dotenv.config();
 
 // Entry point for the server
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.NODE_PORT || 3000;
 
 // Database initialization
 const datasource = new DataSource({

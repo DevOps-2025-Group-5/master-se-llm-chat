@@ -1,14 +1,19 @@
 import mysql from "mysql2/promise";
+import { dbConfig as config } from "../config/db.config.js";
 
-// MySQL connection
+if (!config.host || !config.user || !config.password || !config.database) {
+  throw new Error("Database configuration is not set");
+}
+
 export const dbConfig = {
-  host: "localhost",
-  user: "chatuser",
-  password: "chatpassword",
-  database: "chatdb",
-  type: "mysql",
+  host: config.host,
+  user: config.user,
+  password: config.password,
+  database: config.database,
+  type: config.dialect,
 };
 
+// MySQL connection
 export const startConnection = async () => {
   try {
     const connection = await mysql.createConnection(dbConfig);
