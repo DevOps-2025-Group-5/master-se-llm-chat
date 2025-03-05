@@ -1,4 +1,3 @@
-mysqldump: [Warning] Using a password on the command line interface can be insecure.
 -- MySQL dump 10.13  Distrib 9.2.0, for Linux (aarch64)
 --
 -- Host: localhost    Database: chatdb
@@ -8,7 +7,15 @@ mysqldump: [Warning] Using a password on the command line interface can be insec
 -- Table structure for table `courses`
 --
 
+--
+-- Table structure for table `student_courses`
+--
+
+DROP TABLE IF EXISTS `student_courses`;
 DROP TABLE IF EXISTS `courses`;
+DROP TABLE IF EXISTS `students`;
+
+
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `courses` (
@@ -36,38 +43,12 @@ INSERT INTO `courses` VALUES (1,'Introduction to Film Studies','Vestibulum quam 
 /*!40000 ALTER TABLE `courses` ENABLE KEYS */;
 UNLOCK TABLES;
 
---
--- Table structure for table `student_courses`
---
-
-DROP TABLE IF EXISTS `student_courses`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `student_courses` (
-  `student_id` int NOT NULL,
-  `course_id` int NOT NULL,
-  PRIMARY KEY (`student_id`,`course_id`),
-  KEY `course_id` (`course_id`),
-  CONSTRAINT `student_courses_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `students` (`student_id`),
-  CONSTRAINT `student_courses_ibfk_2` FOREIGN KEY (`course_id`) REFERENCES `courses` (`course_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `student_courses`
---
-
-LOCK TABLES `student_courses` WRITE;
-/*!40000 ALTER TABLE `student_courses` DISABLE KEYS */;
-INSERT INTO `student_courses` VALUES (10,1),(7,2),(4,4),(3,5),(8,6),(5,8),(2,10),(5,11),(6,11),(2,13),(10,13),(3,15),(7,15),(1,16),(1,17),(10,17),(1,20),(9,20),(2,21),(4,21),(8,21),(1,23),(5,23),(7,26),(8,26),(1,27),(2,28),(1,29),(4,30),(6,30),(2,32),(8,32),(6,34),(1,35),(1,36),(4,36),(6,38),(10,38),(1,40),(3,40),(9,40),(1,42),(9,42),(1,43),(9,43),(2,44),(4,44),(6,44),(10,45),(1,49),(7,49),(8,50),(2,51),(3,51),(4,51),(10,51),(5,52),(4,54),(6,54),(10,54),(9,55),(10,56),(2,57),(5,59),(7,59),(7,60),(3,61),(8,63),(4,65),(5,65),(9,66),(2,70),(5,70),(6,71),(8,74),(7,80),(5,81),(7,81),(9,82),(9,83),(3,86),(4,86),(7,86),(8,86),(2,87),(10,87),(1,89),(7,89),(9,89),(2,92),(1,94),(2,94),(5,94),(9,94),(3,95),(3,96),(8,97),(10,97),(9,98),(3,99);
-/*!40000 ALTER TABLE `student_courses` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `students`
 --
 
-DROP TABLE IF EXISTS `students`;
+
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `students` (
@@ -98,14 +79,26 @@ LOCK TABLES `students` WRITE;
 INSERT INTO `students` VALUES (1,'wluckie0','Winonah','Luckie',19,'Genderqueer','Room 1541','wluckie0@ibm.com','701-394-1788','2018-06-20','2022-02-27',2.43,'Winonah Luckie','Biology'),(2,'vshinfield1','Virge','Shinfield',23,'Male','Room 133','vshinfield1@yolasite.com','695-888-2323','2019-02-20','2024-02-02',1.48,'Virge Shinfield','Graphic Design'),(3,'amellonby2','Ashton','Mellonby',22,'Agender','Apt 565','amellonby2@addtoany.com','391-719-8157','2018-03-10','2023-04-20',0.82,'Ashton Mellonby','Journalism'),(4,'kballefant3','Kelly','Ballefant',24,'Agender','Room 1','kballefant3@princeton.edu','587-943-6202','2019-12-18','2025-01-26',0.02,'Kelly Ballefant','Urban Planning'),(5,'mkaveney4','Mellie','Kaveney',23,'Female','PO Box 84339','mkaveney4@netscape.com','480-748-0918','2019-05-11','2023-11-30',1.18,'Mellie Kaveney','Religious Studies'),(6,'dwhiles5','Dorisa','Whiles',25,'Bigender','Apt 646','dwhiles5@biglobe.ne.jp','850-130-7002','2018-03-05','2023-05-12',2.67,'Dorisa Whiles','Philosophy'),(7,'mdickon6','Maryanne','Dickon',23,'Female','Apt 1304','mdickon6@icq.com','438-147-4057','2020-04-07','2022-11-04',2.02,'Maryanne Dickon','Social Work'),(8,'lsennett7','Leta','Sennett',20,'Female','12th Floor','lsennett7@seesaa.net','897-532-5311','2019-03-10','2022-06-21',0.01,'Leta Sennett','Education'),(9,'gmungane8','Gonzales','Mungane',18,'Male','PO Box 82086','gmungane8@berkeley.edu','238-320-6360','2020-06-30','2023-10-16',2.49,'Gonzales Mungane','Biology'),(10,'rgrunson9','Reggi','Grunson',19,'Non-binary','Apt 1701','rgrunson9@4shared.com','367-601-7825','2018-02-21','2025-11-30',0.11,'Reggi Grunson','Engineering');
 /*!40000 ALTER TABLE `students` ENABLE KEYS */;
 UNLOCK TABLES;
-/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
-/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
-/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
-/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
-/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-03-05 14:26:04
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `student_courses` (
+  `student_id` int NOT NULL,
+  `course_id` int NOT NULL,
+  PRIMARY KEY (`student_id`,`course_id`),
+  KEY `course_id` (`course_id`),
+  CONSTRAINT `student_courses_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `students` (`student_id`),
+  CONSTRAINT `student_courses_ibfk_2` FOREIGN KEY (`course_id`) REFERENCES `courses` (`course_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `student_courses`
+--
+
+LOCK TABLES `student_courses` WRITE;
+/*!40000 ALTER TABLE `student_courses` DISABLE KEYS */;
+INSERT INTO `student_courses` VALUES (10,1),(7,2),(4,4),(3,5),(8,6),(5,8),(2,10),(5,11),(6,11),(2,13),(10,13),(3,15),(7,15),(1,16),(1,17),(10,17),(1,20),(9,20),(2,21),(4,21),(8,21),(1,23),(5,23),(7,26),(8,26),(1,27),(2,28),(1,29),(4,30),(6,30),(2,32),(8,32),(6,34),(1,35),(1,36),(4,36),(6,38),(10,38),(1,40),(3,40),(9,40),(1,42),(9,42),(1,43),(9,43),(2,44),(4,44),(6,44),(10,45),(1,49),(7,49),(8,50),(2,51),(3,51),(4,51),(10,51),(5,52),(4,54),(6,54),(10,54),(9,55),(10,56),(2,57),(5,59),(7,59),(7,60),(3,61),(8,63),(4,65),(5,65),(9,66),(2,70),(5,70),(6,71),(8,74),(7,80),(5,81),(7,81),(9,82),(9,83),(3,86),(4,86),(7,86),(8,86),(2,87),(10,87),(1,89),(7,89),(9,89),(2,92),(1,94),(2,94),(5,94),(9,94),(3,95),(3,96),(8,97),(10,97),(9,98),(3,99);
+/*!40000 ALTER TABLE `student_courses` ENABLE KEYS */;
+UNLOCK TABLES;

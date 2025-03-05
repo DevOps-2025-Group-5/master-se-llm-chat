@@ -25,28 +25,13 @@ cp chat-api/.env-sample chat-api/.env
 OPENAI_API_KEY=your-api-key
 ```
 
-5. Start the API server:
-
-```bash
-cd chat-api
-npm run start
-```
-
-6. Start the db server:
+5. Start the db server:
 
 ```bash
 docker-compose up -d
 ```
 
-7. Start the client:
-
-```bash
-cd ..
-cd client
-npm run dev
-```
-
-8. Migrate the database:
+6. Migrate the database:
 
 ```bash
 cd ..
@@ -54,6 +39,7 @@ cd chat-api/sqldata
 docker exec -it chat-api-db-1 mysql -u chatuser -pchatpassword
 ```
 
+If needed, create the database:
 ```sql
 CREATE DATABASE chatdb;
 exit
@@ -63,3 +49,17 @@ exit
 docker exec -i chat-api-db-1 mysql -u chatuser -pchatpassword chatdb < chatdb.sql
 ```
 
+7. Start the API server:
+
+```bash
+cd chat-api
+npm run start
+```
+
+8. Start the client:
+
+```bash
+cd ..
+cd client
+npm run dev
+```
