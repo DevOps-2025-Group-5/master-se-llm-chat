@@ -11,9 +11,7 @@ import {
 } from "@langchain/langgraph";
 import { pull } from "langchain/hub";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
-import {
-  trimMessages,
-} from "@langchain/core/messages";
+import { trimMessages } from "@langchain/core/messages";
 import cors from "cors";
 import { z } from "zod";
 import { dbConfig, getTableInfo, startConnection } from "./repository/table.js";
