@@ -14,10 +14,15 @@ services:
     volumes:
       - student_llm_chat_data:/var/lib/mysql
       - ./sqldata:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   chat-api:
     build: .
-    restart: unless-stopped
+    restart: on-failure
     command: npm run start
     env_file:
       - ./.env
@@ -31,7 +36,8 @@ services:
       - MYSQL_DOCKER_PORT=$MYSQL_DOCKER_PORT
       - MYSQL_LOCAL_PORT=$MYSQL_LOCAL_PORT
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     stdin_open: true
     tty: true
     volumes:
