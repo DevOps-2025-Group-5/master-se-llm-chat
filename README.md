@@ -3,7 +3,7 @@
 ## Setup
 
 1. Install [Node.js](https://nodejs.org/en/download/)
-2. Install the dependencies by running 
+2. Install the dependencies by running
 
 ```bash
 cd client
@@ -15,8 +15,7 @@ npm install
 3. Create a `.env` file in the `chat-api`:
 
 ```bash
-cd ..
-cp chat-api/.env-sample chat-api/.env
+cp .env-sample .env
 ```
 
 4. Add your OpenAI API key to the `.env` file:
@@ -25,41 +24,15 @@ cp chat-api/.env-sample chat-api/.env
 OPENAI_API_KEY=your-api-key
 ```
 
-5. Start the db server:
+5. Start the backend server:
 
 ```bash
 docker-compose up -d
 ```
 
-6. Migrate the database:
+6. Start the frontend server:
 
 ```bash
-cd ..
-cd chat-api/sqldata
-docker exec -it chat-api-db-1 mysql -u chatuser -pchatpassword
-```
-
-If needed, create the database:
-```sql
-CREATE DATABASE chatdb;
-exit
-```
-
-```bash
-docker exec -i chat-api-db-1 mysql -u chatuser -pchatpassword chatdb < chatdb.sql
-```
-
-7. Start the API server:
-
-```bash
-cd chat-api
-npm run start
-```
-
-8. Start the client:
-
-```bash
-cd ..
-cd client
+cd ../client
 npm run dev
 ```
