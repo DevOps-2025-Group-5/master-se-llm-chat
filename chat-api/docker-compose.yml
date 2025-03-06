@@ -1,0 +1,49 @@
+version: "3.3"
+services:
+  db:
+    image: mysql:latest
+    restart: unless-stopped
+    env_file: ./.env
+    environment:
+      - MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD
+      - MYSQL_DATABASE=$MYSQL_DATABASE
+      - MYSQL_LOCAL_PORT=$MYSQL_LOCAL_PORT
+      - MYSQL_DOCKER_PORT=$MYSQL_DOCKER_PORT
+    ports:
+      - $MYSQL_LOCAL_PORT:$MYSQL_DOCKER_PORT
+    volumes:
+      - student_llm_chat_data:/var/lib/mysql
+      - ./sqldata:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  chat-api:
+    build: .
+    restart: on-failure
+    command: npm run start
+    env_file:
+      - ./.env
+    ports:
+      - $NODE_PORT:$NODE_PORT
+    environment:
+      - MYSQL_HOST=db
+      - MYSQL_USER=$MYSQL_USER
+      - MYSQL_PASSWORD=$MYSQL_PASSWORD
+      - MYSQL_NAME=$MYSQL_DATABASE
+      - MYSQL_DOCKER_PORT=$MYSQL_DOCKER_PORT
+      - MYSQL_LOCAL_PORT=$MYSQL_LOCAL_PORT
+    depends_on:
+      db:
+        condition: service_healthy
+    stdin_open: true
+    tty: true
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules
+
+volumes:
+  student_llm_chat_data:
+  node_modules:
