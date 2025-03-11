@@ -1,5 +1,4 @@
 "use client";
-import { Chat } from "@/components/chat/Chat";
 import { ExampleChatService } from "@chatscope/use-chat/dist/examples";
 import {
   BasicStorage,
@@ -20,6 +19,8 @@ import {
 import { nanoid } from "nanoid";
 import { useEffect, useState } from "react";
 import { AutoDraft } from "@chatscope/use-chat/dist/enums/AutoDraft";
+import { Chat } from "../components/chat/Chat";
+import React from "react";
 
 export default function Home() {
   const [isClient, setIsClient] = useState(false);

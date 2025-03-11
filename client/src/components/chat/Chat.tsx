@@ -24,6 +24,7 @@ import {
 } from "@chatscope/use-chat";
 
 import { sendMessage as send } from "@/repository/chat";
+import React from "react";
 
 export const Chat = (user) => {
   // Get all chat related values and methods from useChat hook
