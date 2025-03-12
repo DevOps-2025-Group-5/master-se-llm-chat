@@ -19,7 +19,7 @@ cd ..
 cp .env-sample .env
 ```
 
-4. Run this command in the root to add the AUTH secret
+4. Run this command in the `client` folder to add the AUTH secret
 
 ```
 npx auth 
