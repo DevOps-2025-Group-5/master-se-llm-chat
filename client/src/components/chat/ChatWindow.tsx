@@ -57,7 +57,8 @@ export const ChatWindow = ({ session }: { session: Session }) => {
 
   const users = [{ name: chatAIUser.username, avatar: chatAIUser.avatar }];
 
-  const messageIdGenerator = (message) => nanoid();
+  const messageIdGenerator = (message: ChatMessage<MessageContentType>) =>
+    nanoid();
   const groupIdGenerator = () => nanoid();
 
   const userStorage = new BasicStorage({
@@ -70,7 +71,7 @@ export const ChatWindow = ({ session }: { session: Session }) => {
     messageIdGenerator,
   });
 
-  const serviceFactory = (storage, updateState) => {
+  const serviceFactory = (storage: IStorage, updateState: UpdateState) => {
     return new ExampleChatService(storage, updateState);
   };
 
