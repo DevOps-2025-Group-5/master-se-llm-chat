@@ -10,7 +10,7 @@ cd client
 npm install
 cd ../chat-api
 npm install
-```
+``` 
 
 3. Create a `.env` file in the root `\` directory:
 
@@ -19,7 +19,13 @@ cd ..
 cp .env-sample .env
 ```
 
-4. Add your OpenAI API key and GitHub OAuth to the `.env` file:
+4. Run this command in the root to add the AUTH secret
+
+```
+npx auth 
+```
+
+5. Add your OpenAI API key and GitHub OAuth to the `.env` file:
 
 ```
 OPENAI_API_KEY=your-api-key
@@ -32,7 +38,7 @@ You can also request the key from Roman.
 
 ⚠️ Important: Make sure you don't share the keys publicly. ⚠️
 
-1. Start the container:
+6. Start the container:
 
 ```bash
 docker-compose up -build
