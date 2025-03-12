@@ -18,6 +18,7 @@ import { dbConfig, getTableInfo, startConnection } from "./repository/table.js";
 import { SqlDatabase } from "langchain/sql_db";
 import { DataSource } from "typeorm";
 import { QuerySqlTool } from "langchain/tools/sql";
+import { promptTemplates } from "./prompt/promptTemplates.js";
 
 dotenv.config();
 
@@ -95,6 +96,7 @@ const trimmer = trimMessages({
 // @ts-ignore
 const InputStateAnnotation = Annotation.Root({
   question: Annotation,
+  id: Annotation,
 });
 
 const StateAnnotation = Annotation.Root({
@@ -102,6 +104,7 @@ const StateAnnotation = Annotation.Root({
     reducer: messagesStateReducer,
     default: () => [],
   }),
+  id: Annotation,
   question: Annotation,
   query: Annotation,
   result: Annotation,
@@ -109,7 +112,10 @@ const StateAnnotation = Annotation.Root({
 });
 
 // Define a prompt template for the SQL query system
-const queryPromptTemplate = await pull("langchain-ai/sql-query-system-prompt");
+const queryPromptTemplate = ChatPromptTemplate.fromMessages(
+  // @ts-ignore
+  promptTemplates.queryPromptTemplate
+);
 const queryOutput = z.object({
   query: z.string().describe("Syntactically valid SQL query."),
 });
@@ -121,6 +127,7 @@ const writeQuery = async (state) => {
     top_k: 10,
     table_info: await db.getTableInfo(),
     input: state.question,
+    userId: state.id,
   });
   const result = await structuredLlm.invoke(promptValue);
   return { query: result.query };
@@ -131,13 +138,10 @@ const executeQuery = async (state) => {
   return { result: await executeQueryTool.invoke(state.query) };
 };
 
-const answerPromptTemplate = ChatPromptTemplate.fromMessages([
-  [
-    "system",
-    "Act as an experienced student assistant. You are now able to intelligently answer questions about the information you have been provided. Given the following user question, corresponding SQL query, and SQL result, answer the user question.\n\nQuestion: {question}\nSQL Query: {query}\nSQL Result: {result}\n",
-  ],
-  ["placeholder", "{messages}"],
-]);
+const answerPromptTemplate = ChatPromptTemplate.fromMessages(
+  // @ts-ignore
+  promptTemplates.answerPromptTemplate
+);
 
 const generateAnswer = async (state) => {
   const trimmedMessage = await trimmer.invoke(state.messages);
@@ -146,6 +150,7 @@ const generateAnswer = async (state) => {
     question: state.question,
     query: state.query,
     result: state.result,
+    userId: state.id,
   });
   const response = await llm.invoke(promptValue);
   return {
@@ -191,7 +196,10 @@ app.post("/chat", async (req, res) => {
     //   console.log(step);
     //   console.log("\n====\n");
     // }
-    const response = await llmApp.invoke({ question: newMessage }, config);
+    const response = await llmApp.invoke(
+      { question: newMessage, id: userId },
+      config
+    );
     // const responseMessage = response.messages[response.messages.length - 1];
     res.json({
       message: response,
