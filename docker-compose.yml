@@ -1,0 +1,81 @@
+version: "3.3"
+services:
+  # auth-db:
+  #   image: postgres:latest
+  #   restart: unless-stopped
+  #   env_file: ./.env
+  #   environment:
+  #     - POSTGRES_USER=$POSTGRES_USER
+  #     - POSTGRES_PASSWORD=$POSTGRES_PASSWORD
+  #     - POSTGRES_DB=$POSTGRES_DB
+  #     - POSTGRES_LOCAL_PORT=$POSTGRES_LOCAL_PORT
+  #     - POSTGRES_DOCKER_PORT=$POSTGRES_DOCKER_PORT
+  #   ports:
+  #     - $POSTGRES_LOCAL_PORT:$POSTGRES_DOCKER_PORT
+  #   volumes:
+  #     - auth_data:/var/lib/postgresql/data
+  student-db:
+    image: mysql:latest
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      - MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD
+      - MYSQL_DATABASE=$MYSQL_DATABASE
+      - MYSQL_LOCAL_PORT=$MYSQL_LOCAL_PORT
+      - MYSQL_DOCKER_PORT=$MYSQL_DOCKER_PORT
+    ports:
+      - $MYSQL_LOCAL_PORT:$MYSQL_DOCKER_PORT
+    volumes:
+      - student_llm_chat_data:/var/lib/mysql
+      - ./sqldata/student_data:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  chat-api:
+    build: ./chat-api
+    restart: on-failure
+    command: npm run start
+    env_file:
+      - .env
+    ports:
+      - $NODE_PORT:$NODE_PORT
+    environment:
+      - MYSQL_HOST=student-db
+      - MYSQL_USER=$MYSQL_USER
+      - MYSQL_PASSWORD=$MYSQL_PASSWORD
+      - MYSQL_NAME=$MYSQL_DATABASE
+      - MYSQL_DOCKER_PORT=$MYSQL_DOCKER_PORT
+      - MYSQL_LOCAL_PORT=$MYSQL_LOCAL_PORT
+    depends_on:
+      student-db:
+        condition: service_healthy
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./chat-api:/app
+      - /app/node_modules
+
+  chat-client:
+    build: ./client
+    restart: on-failure
+    command: npm run dev
+    env_file:
+      - .env
+    ports:
+      - $CLIENT_PORT:$CLIENT_PORT
+    environment:
+      - AUTH_SECRET=$AUTH_SECRET
+    stdin_open: true
+    depends_on:
+      - chat-api
+    tty: true
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+
+volumes:
+  student_llm_chat_data:
+  # auth_data:

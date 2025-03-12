@@ -1,5 +1,4 @@
 "use client";
-import { Chat } from "@/components/chat/Chat";
 import { ExampleChatService } from "@chatscope/use-chat/dist/examples";
 import {
   BasicStorage,
@@ -20,8 +19,11 @@ import {
 import { nanoid } from "nanoid";
 import { useEffect, useState } from "react";
 import { AutoDraft } from "@chatscope/use-chat/dist/enums/AutoDraft";
+import { Chat } from "./Chat";
+import React from "react";
+import { Session } from "next-auth";
 
-export default function Home() {
+export const ChatWindow = ({ session }: { session: Session }) => {
   const [isClient, setIsClient] = useState(false);
   useEffect(() => {
     setIsClient(true);
@@ -33,12 +35,12 @@ export default function Home() {
 
   const loggedInUser = new User({
     id: "1",
-    username: "Me",
-    avatar: "/student.svg",
+    username: session.user.name,
+    avatar: session.user.image,
     presence: new Presence({ status: UserStatus.Available, description: "" }),
     firstName: "",
     lastName: "",
-    email: "",
+    email: session.user.email,
     bio: "",
   });
 
@@ -53,10 +55,7 @@ export default function Home() {
     bio: "",
   });
 
-  const users = [
-    { name: loggedInUser.username, avatar: loggedInUser.avatar },
-    { name: chatAIUser.username, avatar: chatAIUser.avatar },
-  ];
+  const users = [{ name: chatAIUser.username, avatar: chatAIUser.avatar }];
 
   const messageIdGenerator = (message) => nanoid();
   const groupIdGenerator = () => nanoid();
@@ -160,8 +159,8 @@ export default function Home() {
           autoDraft: AutoDraft.Save | AutoDraft.Restore,
         }}
       >
-        <Chat user={loggedInUser} />
+        <Chat user={loggedInUser} bot={chatAIUser} />
       </ChatProvider>
     </div>
   );
-}
+};

@@ -21,11 +21,14 @@ import {
   MessageContentType,
   MessageDirection,
   MessageStatus,
+  User,
 } from "@chatscope/use-chat";
 
 import { sendMessage as send } from "@/repository/chat";
+import React from "react";
 
-export const Chat = (user) => {
+export const Chat = ({ user, bot }: { user: User; bot: User }) => {
+  console.log("Chat component", user, bot);
   // Get all chat related values and methods from useChat hook
   const {
     currentMessages,
@@ -145,7 +148,7 @@ export const Chat = (user) => {
     <MainContainer responsive>
       <Sidebar position="left" scrollable>
         <ConversationHeader style={{ backgroundColor: "#fff" }}>
-          {/* <Avatar src={user.avatar} /> */}
+          <Avatar src={user.avatar} />
           <ConversationHeader.Content>
             {user.username}
           </ConversationHeader.Content>
