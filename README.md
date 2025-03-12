@@ -23,7 +23,7 @@ cp .env-sample .env
 
 ```
 OPENAI_API_KEY=your-api-key
-AUTH_GITHUB_SECRET=[your-github-auth-secret]
+AUTH_GITHUB_SECRET=your-github-auth-secret
 ```
 
 For the GitHub OAuth secret, you can create a new OAuth app [here](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app)
