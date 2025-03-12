@@ -26,7 +26,6 @@ import { MessageContent, TextContent, User } from "@chatscope/use-chat";
 
 import { sendMessage as send } from "@/repository/chat";
 import Button from "@mui/material/Button";
-import { signOut } from "../../utils/auth";
 import { handleSignOut } from "./modules/signout";
 
 export const Chat = ({ user, bot }: { user: User; bot: User }) => {
@@ -116,7 +115,7 @@ export const Chat = ({ user, bot }: { user: User; bot: User }) => {
       });
 
       try {
-        const response = await send(text);
+        const response = await send(text, user.id);
         const botMessage = new ChatMessage({
           id: "",
           content: response,
@@ -158,7 +157,6 @@ export const Chat = ({ user, bot }: { user: User; bot: User }) => {
 
     return undefined;
   }, [activeConversation, getUser]);
-
 
   return (
     <MainContainer responsive>

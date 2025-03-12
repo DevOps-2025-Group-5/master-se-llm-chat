@@ -42,8 +42,6 @@ const openaiApiKey = process.env.OPENAI_API_KEY;
 if (!openaiApiKey) {
   throw new Error("The OPENAI_API_KEY environment variable is not set.");
 }
-// Thread ID for keeping track of the conversation
-const config = { configurable: { thread_id: 1 } };
 
 // Cors option for the server
 const corsOptions = {
@@ -51,6 +49,7 @@ const corsOptions = {
 };
 
 const app = express();
+// @ts-ignore
 app.use(express.json());
 // @ts-ignore
 app.use(cors(corsOptions));
@@ -93,6 +92,7 @@ const trimmer = trimMessages({
 // };
 
 // Create a new annotation for the input state
+// @ts-ignore
 const InputStateAnnotation = Annotation.Root({
   question: Annotation,
 });
@@ -172,12 +172,16 @@ const memory = new MemorySaver();
 const llmApp = workflow.compile({ checkpointer: memory });
 
 // Start the server on the specified port
+// @ts-ignore
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
 
+// @ts-ignore
 app.post("/chat", async (req, res) => {
-  const { newMessage } = req.body;
+  const { newMessage, userId } = req.body;
+  // Use userId for Thread ID for keeping track of the conversation
+  const config = { configurable: { thread_id: parseInt(userId) } };
   try {
     // console.log(inputs);
     // console.log("\n====\n");

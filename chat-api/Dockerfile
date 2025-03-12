@@ -14,4 +14,4 @@ ENV CORS_ORIGIN=${CORS_ORIGIN}
 
 EXPOSE $NODE_PORT
 
-CMD [ "node", "index.js" ]
+CMD [ "node", "src/index.js" ]
