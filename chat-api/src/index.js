@@ -9,7 +9,6 @@ import {
   Annotation,
   messagesStateReducer,
 } from "@langchain/langgraph";
-import { pull } from "langchain/hub";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { trimMessages } from "@langchain/core/messages";
 import cors from "cors";
@@ -111,6 +110,12 @@ const StateAnnotation = Annotation.Root({
   answer: Annotation,
 });
 
+// // Define a system prompt template for the SQL query system
+// const systemPromptTemplate = ChatPromptTemplate.fromMessages(
+//   // @ts-ignore
+//   promptTemplates.systemPromptTemplate
+// );
+
 // Define a prompt template for the SQL query system
 const queryPromptTemplate = ChatPromptTemplate.fromMessages(
   // @ts-ignore
@@ -129,6 +134,23 @@ const writeQuery = async (state) => {
     input: state.question,
     userId: state.id,
   });
+  // const systemMessage = await queryPromptTemplate.format({
+  //   dialect: db.appDataSourceOptions.type,
+  //   top_k: 10,
+  //   table_info: await db.getTableInfo(),
+  //   input: state.question,
+  //   userId: state.id,
+  // });
+  // const agent = createReactAgent({
+  //   llm: llm,
+  //   tools: tools,
+  //   stateModifier: systemMessage,
+  // });
+  // const input = {
+  //   messages: [{ role: "user", content: state.question }],
+  // };
+  // const result = await agent.invoke(input);
+
   const result = await structuredLlm.invoke(promptValue);
   return { query: result.query };
 };
@@ -209,22 +231,3 @@ app.post("/chat", async (req, res) => {
     res.status(500).json({ message: "Internal Server Error", error: error });
   }
 });
-
-// // Get courses for a user
-// app.get("/users/:id/courses", async (req, res) => {
-//   const userId = req.params.id;
-
-//   try {
-//     if (!connection) {
-//       throw new Error("MySQL connection is not established.");
-//     }
-//     const [rows] = await connection.query(
-//       "SELECT courses.* FROM courses JOIN student_courses ON courses.course_id = student_courses.course_id WHERE student_courses.student_id = ?",
-//       [userId]
-//     );
-//     res.json({ courses: rows });
-//   } catch (error) {
-//     console.error("Error:", error);
-//     res.status(500).json({ message: "Internal Server Error", error: error });
-//   }
-// });
