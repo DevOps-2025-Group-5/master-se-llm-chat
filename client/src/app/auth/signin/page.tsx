@@ -1,51 +1,49 @@
 "use client";
 import * as React from "react";
 import { AppProvider } from "@toolpad/core/AppProvider";
-import {
-  SignInPage,
-  type AuthProvider,
-  type AuthResponse,
-} from "@toolpad/core/SignInPage";
+import { SignInPage, type AuthProvider } from "@toolpad/core/SignInPage";
 import { useTheme } from "@mui/material/styles";
+import { providerMap } from "../../../utils/auth";
+import signInUser from "./signin";
 
-const providers = [{ id: "credentials", name: "Email and password" }];
+// const signIn: (provider: AuthProvider, formData: FormData) => void = async (
+//   provider,
+//   formData
+// ) => {
+//   // try {
+//   //   // Simulate an asynchronous sign-in process
+//   //   await new Promise<void>((resolve) => {
+//   //     setTimeout(() => {
+//   //       console.log(
+//   //         `Signing in with "${provider.name}" and credentials: ${formData.get("email")}, ${formData.get("password")}`
+//   //       );
+//   //       resolve();
+//   //     }, 300);
+//   //   });
+//   // } catch (error) {
+//   //   console.error("Sign-in failed:", error);
+//   // }
+//   try {
+//     console.log(
+//       `Signing in with "${provider.name}" and credentials: ${formData.get("email")}, ${formData.get("password")}`
+//     );
+//     await signIn(provider, formData);
+//   } catch (error) {
+//     console.error("Sign-in failed:", error);
+//   }
+// };
 
-const signIn: (
-  provider: AuthProvider,
-  formData?: FormData
-) => Promise<AuthResponse> | void = async (provider, formData) => {
-  const promise = new Promise<AuthResponse>((resolve) => {
-    setTimeout(() => {
-      const email = formData?.get("email");
-      const password = formData?.get("password");
-      alert(
-        `Signing in with "${provider.name}" and credentials: ${email}, ${password}`
-      );
-      // preview-start
-      resolve({
-        type: "CredentialsSignin",
-        error: "Invalid credentials.",
-      });
-      // preview-end
-    }, 300);
-  });
-  return promise;
-};
-
-export default function NotificationsSignInPageError() {
-  const theme = useTheme();
+export default function CredentialsSignInPage() {
   return (
-    // preview-start
-    <AppProvider theme={theme}>
+    <AppProvider>
       <SignInPage
-        signIn={signIn}
-        providers={providers}
+        signIn={signInUser}
+        providers={providerMap}
         slotProps={{
           emailField: { autoFocus: false },
           form: { noValidate: true },
         }}
       />
     </AppProvider>
-    // preview-end
   );
 }

@@ -1,34 +1,39 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
+import type { Provider } from "next-auth/providers";
+import GitHub from "next-auth/providers/github";
 import { saltAndHashPassword } from "./password";
 
-export const { handlers, signIn, signOut, auth } = NextAuth({
-  providers: [
-    Credentials({
-      // You can specify which fields should be submitted, by adding keys to the `credentials` object.
-      // e.g. domain, username, password, 2FA token, etc.
-      credentials: {
-        email: {},
-        password: {},
-      },
-      authorize: async (credentials) => {
-        let user = null;
+const providers: Provider[] = [
+  Credentials({
+    credentials: { password: { label: "Password", type: "password" } },
+    authorize(c) {
+      if (c.password !== "password") return null;
+      return {
+        id: "test",
+        name: "Test User",
+        email: "test@example.com",
+      };
+    },
+  }),
+  GitHub,
+];
 
-        // logic to salt and hash password
-        // const pwHash = saltAndHashPassword(credentials.password);
+export const providerMap = providers
+  .map((provider) => {
+    if (typeof provider === "function") {
+      const providerData = provider();
+      return { id: providerData.id, name: providerData.name };
+    } else {
+      return { id: provider.id, name: provider.name };
+    }
+  })
+  // .filter((provider) => provider.id !== "credentials");
 
-        // logic to verify if the user exists
-        // user = await getUserFromDb(credentials.email, pwHash);
-
-        if (!user) {
-          // No user found, so this is their first attempt to login
-          // Optionally, this is also the place you could do a user registration
-          throw new Error("Invalid credentials.");
-        }
-
-        // return user object with their profile data
-        return user;
-      },
-    }),
-  ],
+export const { handlers, auth, signIn, signOut } = NextAuth({
+  providers,
+  secret: process.env.AUTH_SECRET,
+  pages: {
+    signIn: "/auth/signin",
+  },
 });
