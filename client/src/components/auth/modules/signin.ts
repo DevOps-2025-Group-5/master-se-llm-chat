@@ -6,7 +6,7 @@ const signInUser: (provider: AuthProvider, formData: FormData) => void = async (
   provider,
   formData
 ) => {
-  await signIn(provider.id);
+  await signIn(provider.id, { redirectTo: "/" });
 };
 
 export default signInUser;
