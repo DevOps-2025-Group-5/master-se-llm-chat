@@ -32,6 +32,14 @@ export const providerMap = providers.map((provider) => {
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers,
   secret: process.env.AUTH_SECRET,
+  callbacks: {
+    async jwt({ token, user, account, profile, session }) {
+      return { ...token, ...user, ...account, ...profile, ...session };
+    },
+    async session({ session, token, user }) {
+      return { ...session, token, ...user };
+    },
+  },
   pages: {
     signIn: "/auth/signin",
     // signOut: "/auth/signout",

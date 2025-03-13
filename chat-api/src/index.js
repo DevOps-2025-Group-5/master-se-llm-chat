@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-import express from "express";
+import express, { response } from "express";
 import { ChatOpenAI } from "@langchain/openai";
 import {
   START,
@@ -23,6 +23,9 @@ dotenv.config();
 
 // Entry point for the server
 const PORT = process.env.NODE_PORT || 3000;
+
+const clientId = process.env.AUTH_GITHUB_ID;
+const clientSecret = process.env.AUTH_GITHUB_SECRET;
 
 // Database initialization
 const datasource = new DataSource({
@@ -206,7 +209,40 @@ app.listen(PORT, () => {
 
 // @ts-ignore
 app.post("/chat", async (req, res) => {
-  const { newMessage, userId } = req.body;
+  const { newMessage } = req.body;
+
+  let accessToken;
+  let userData;
+  // const token = accessToken.split(" ")[1];
+  try {
+    if (!req.headers["authorization"]) {
+      throw new Error("Authorization failed");
+    }
+    accessToken = req.headers.authorization.split(" ")[1];
+    console.log(accessToken);
+    // Check if the user is authorized
+    const response = await fetch(`https://api.github.com/user`, {
+      method: "GET",
+      headers: {
+        Accept: "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+    userData = await response.json();
+    console.log(userData);
+    if (response.status !== 200) {
+      throw new Error("Authorization failed");
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(401).json({ message: `Authorization Failed`, error: error });
+    return;
+  }
+
+  // Get userID from the token
+  const userId = userData.id;
+
   // Use userId for Thread ID for keeping track of the conversation
   const config = { configurable: { thread_id: parseInt(userId) } };
   try {

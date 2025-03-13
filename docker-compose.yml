@@ -68,6 +68,8 @@ services:
       - $CLIENT_PORT:$CLIENT_PORT
     environment:
       - AUTH_SECRET=$AUTH_SECRET
+      - BACKEND_ENTRYPOINT=$BACKEND_ENTRYPOINT
+      - NODE_PORT=$NODE_PORT
     stdin_open: true
     depends_on:
       - chat-api
