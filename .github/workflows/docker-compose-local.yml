@@ -1,0 +1,36 @@
+name: Docker Compose CI (Manual)
+
+on:
+  workflow_dispatch:  
+
+jobs:
+  build-and-run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Create .env File
+        run: |
+          echo "MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }}" >> .env
+          echo "MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}" >> .env
+          echo "MYSQL_LOCAL_PORT=${{ secrets.MYSQL_LOCAL_PORT }}" >> .env
+          echo "MYSQL_DOCKER_PORT=${{ secrets.MYSQL_DOCKER_PORT }}" >> .env
+          echo "NODE_PORT=${{ secrets.NODE_PORT }}" >> .env
+          echo "CLIENT_PORT=${{ secrets.CLIENT_PORT }}" >> .env
+          echo "AUTH_SECRET=${{ secrets.AUTH_SECRET }}" >> .env
+          echo "OPENAI_API_KEY=${{ secret.OPENAI_API_KEY }}" >> .env
+
+      - name: Build and Start Services
+        run: |
+          docker-compose up -d --build
+
+      - name: Show Running Containers
+        run: docker ps
+
+      - name: Stop Services
+        run: docker-compose down
