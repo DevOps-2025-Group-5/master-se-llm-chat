@@ -1,7 +1,14 @@
 name: Docker Compose CI (Manual)
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - main  
+  pull_request:
+    branches:
+      - main 
+  workflow_dispatch:  
+
 
 env:
   MYSQL_DATABASE: chatdb
