@@ -14,31 +14,13 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      - name: Check if .env File Exists
+      - name: Check that .env File does not exist
         run: |
-          if [ ! -f .env ]; then
-            echo ".env file not found"
+          if [ -f .env ]; then
+            echo ".env file found"
             exit 1
           fi
-          echo ".env file found."
-
-      - name: Verify Required Environment Variables
-        run: |
-          REQUIRED_VARS=("MYSQL_ROOT_PASSWORD" "MYSQL_DATABASE" "MYSQL_LOCAL_PORT" "MYSQL_DOCKER_PORT" "NODE_PORT" "CLIENT_PORT" "AUTH_SECRET")
-          MISSING_VARS=()
-
-          for VAR in "${REQUIRED_VARS[@]}"; do
-            if ! grep -q "^$VAR=" .env; then
-              MISSING_VARS+=("$VAR")
-            fi
-          done
-
-          if [ ${#MISSING_VARS[@]} -ne 0 ]; then
-            echo "Missing environment variables in .env file: ${MISSING_VARS[*]}"
-            exit 1
-          fi
-
-          echo "All required environment variables are present."
+          echo ".env file not found."
 
       - name: Build and Start Services
         run: |
