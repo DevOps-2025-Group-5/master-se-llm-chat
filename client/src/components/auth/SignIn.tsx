@@ -1,6 +1,6 @@
 import { SignInPage } from "@toolpad/core";
 import signInUser from "./modules/signin";
-import { auth, providerMap } from "../../utils/auth";
+import { auth, providerMap } from "../../lib/auth";
 import { redirect } from "next/navigation";
 
 export const SignIn = async () => {

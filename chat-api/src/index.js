@@ -18,6 +18,7 @@ import { SqlDatabase } from "langchain/sql_db";
 import { DataSource } from "typeorm";
 import { QuerySqlTool } from "langchain/tools/sql";
 import { promptTemplates } from "./prompt/promptTemplates.js";
+import { getUserData } from "./repository/github.js";
 
 dotenv.config();
 
@@ -209,35 +210,21 @@ app.listen(PORT, () => {
 
 // @ts-ignore
 app.post("/chat", async (req, res) => {
-  const { newMessage } = req.body;
+  const { newMessage, provider } = req.body;
 
-  let accessToken;
   let userData;
-  // const token = accessToken.split(" ")[1];
-  try {
-    if (!req.headers["authorization"]) {
-      throw new Error("Authorization failed");
+  if (provider === "github") {
+    try {
+      if (!req.headers["authorization"]) {
+        throw new Error("Authorization failed");
+      }
+      const accessToken = req.headers.authorization.split(" ")[1];
+      userData = await getUserData(accessToken);
+    } catch (error) {
+      console.error(error);
+      res.status(401).json({ message: `Authorization Failed`, error: error });
+      return;
     }
-    accessToken = req.headers.authorization.split(" ")[1];
-    console.log(accessToken);
-    // Check if the user is authorized
-    const response = await fetch(`https://api.github.com/user`, {
-      method: "GET",
-      headers: {
-        Accept: "application/vnd.github+json",
-        "X-GitHub-Api-Version": "2022-11-28",
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
-    userData = await response.json();
-    console.log(userData);
-    if (response.status !== 200) {
-      throw new Error("Authorization failed");
-    }
-  } catch (error) {
-    console.error(error);
-    res.status(401).json({ message: `Authorization Failed`, error: error });
-    return;
   }
 
   // Get userID from the token

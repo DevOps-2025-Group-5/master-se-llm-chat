@@ -1,6 +1,6 @@
 import React from "react";
 import { ChatWindow } from "../components/chat/ChatWindow";
-import { auth } from "../utils/auth";
+import { auth } from "../lib/auth";
 import { redirect } from "next/navigation";
 import { SessionProvider } from "next-auth/react";
 

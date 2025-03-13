@@ -1,7 +1,6 @@
-
 const backendEntrypoint = `${process.env.BACKEND_ENTRYPOINT}:${process.env.BACKEND_PORT}`;
 
-export const sendMessage = async (message, accessToken) => {
+export const sendMessage = async (message, accessToken, provider) => {
   try {
     console.log("Access Token:", accessToken);
     const response = await fetch(`${backendEntrypoint}/chat`, {
@@ -10,7 +9,7 @@ export const sendMessage = async (message, accessToken) => {
         "Content-Type": "application/json",
         Authorization: `Bearer ${accessToken}`,
       },
-      body: JSON.stringify({ newMessage: message }),
+      body: JSON.stringify({ newMessage: message, provider }),
     });
 
     if (!response.ok) {
