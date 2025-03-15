@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-import express from "express";
+import express, { response } from "express";
 import { ChatOpenAI } from "@langchain/openai";
 import {
   START,
@@ -9,7 +9,6 @@ import {
   Annotation,
   messagesStateReducer,
 } from "@langchain/langgraph";
-import { pull } from "langchain/hub";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { trimMessages } from "@langchain/core/messages";
 import cors from "cors";
@@ -18,6 +17,8 @@ import { dbConfig, getTableInfo, startConnection } from "./repository/table.js";
 import { SqlDatabase } from "langchain/sql_db";
 import { DataSource } from "typeorm";
 import { QuerySqlTool } from "langchain/tools/sql";
+import { promptTemplates } from "./prompt/promptTemplates.js";
+import { getUserData } from "./repository/github.js";
 
 dotenv.config();
 
@@ -42,8 +43,6 @@ const openaiApiKey = process.env.OPENAI_API_KEY;
 if (!openaiApiKey) {
   throw new Error("The OPENAI_API_KEY environment variable is not set.");
 }
-// Thread ID for keeping track of the conversation
-const config = { configurable: { thread_id: 1 } };
 
 // Cors option for the server
 const corsOptions = {
@@ -51,6 +50,7 @@ const corsOptions = {
 };
 
 const app = express();
+// @ts-ignore
 app.use(express.json());
 // @ts-ignore
 app.use(cors(corsOptions));
@@ -93,8 +93,10 @@ const trimmer = trimMessages({
 // };
 
 // Create a new annotation for the input state
+// @ts-ignore
 const InputStateAnnotation = Annotation.Root({
   question: Annotation,
+  id: Annotation,
 });
 
 const StateAnnotation = Annotation.Root({
@@ -102,14 +104,24 @@ const StateAnnotation = Annotation.Root({
     reducer: messagesStateReducer,
     default: () => [],
   }),
+  id: Annotation,
   question: Annotation,
   query: Annotation,
   result: Annotation,
   answer: Annotation,
 });
 
+// // Define a system prompt template for the SQL query system
+// const systemPromptTemplate = ChatPromptTemplate.fromMessages(
+//   // @ts-ignore
+//   promptTemplates.systemPromptTemplate
+// );
+
 // Define a prompt template for the SQL query system
-const queryPromptTemplate = await pull("langchain-ai/sql-query-system-prompt");
+const queryPromptTemplate = ChatPromptTemplate.fromMessages(
+  // @ts-ignore
+  promptTemplates.queryPromptTemplate
+);
 const queryOutput = z.object({
   query: z.string().describe("Syntactically valid SQL query."),
 });
@@ -121,7 +133,25 @@ const writeQuery = async (state) => {
     top_k: 10,
     table_info: await db.getTableInfo(),
     input: state.question,
+    userId: state.id,
   });
+  // const systemMessage = await queryPromptTemplate.format({
+  //   dialect: db.appDataSourceOptions.type,
+  //   top_k: 10,
+  //   table_info: await db.getTableInfo(),
+  //   input: state.question,
+  //   userId: state.id,
+  // });
+  // const agent = createReactAgent({
+  //   llm: llm,
+  //   tools: tools,
+  //   stateModifier: systemMessage,
+  // });
+  // const input = {
+  //   messages: [{ role: "user", content: state.question }],
+  // };
+  // const result = await agent.invoke(input);
+
   const result = await structuredLlm.invoke(promptValue);
   return { query: result.query };
 };
@@ -131,13 +161,10 @@ const executeQuery = async (state) => {
   return { result: await executeQueryTool.invoke(state.query) };
 };
 
-const answerPromptTemplate = ChatPromptTemplate.fromMessages([
-  [
-    "system",
-    "Act as an experienced student assistant. You are now able to intelligently answer questions about the information you have been provided. Given the following user question, corresponding SQL query, and SQL result, answer the user question.\n\nQuestion: {question}\nSQL Query: {query}\nSQL Result: {result}\n",
-  ],
-  ["placeholder", "{messages}"],
-]);
+const answerPromptTemplate = ChatPromptTemplate.fromMessages(
+  // @ts-ignore
+  promptTemplates.answerPromptTemplate
+);
 
 const generateAnswer = async (state) => {
   const trimmedMessage = await trimmer.invoke(state.messages);
@@ -146,6 +173,7 @@ const generateAnswer = async (state) => {
     question: state.question,
     query: state.query,
     result: state.result,
+    userId: state.id,
   });
   const response = await llm.invoke(promptValue);
   return {
@@ -172,12 +200,35 @@ const memory = new MemorySaver();
 const llmApp = workflow.compile({ checkpointer: memory });
 
 // Start the server on the specified port
+// @ts-ignore
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
 
+// @ts-ignore
 app.post("/chat", async (req, res) => {
-  const { newMessage } = req.body;
+  const { newMessage, provider } = req.body;
+
+  let userData;
+  if (provider === "github") {
+    try {
+      if (!req.headers["authorization"]) {
+        throw new Error("Authorization failed");
+      }
+      const accessToken = req.headers.authorization.split(" ")[1];
+      userData = await getUserData(accessToken);
+    } catch (error) {
+      console.error(error);
+      res.status(401).json({ message: `Authorization Failed`, error: error });
+      return;
+    }
+  }
+
+  // Get userID from the token
+  const userId = userData.id;
+
+  // Use userId for Thread ID for keeping track of the conversation
+  const config = { configurable: { thread_id: parseInt(userId) } };
   try {
     // console.log(inputs);
     // console.log("\n====\n");
@@ -187,7 +238,10 @@ app.post("/chat", async (req, res) => {
     //   console.log(step);
     //   console.log("\n====\n");
     // }
-    const response = await llmApp.invoke({ question: newMessage }, config);
+    const response = await llmApp.invoke(
+      { question: newMessage, id: userId },
+      config
+    );
     // const responseMessage = response.messages[response.messages.length - 1];
     res.json({
       message: response,
@@ -197,22 +251,3 @@ app.post("/chat", async (req, res) => {
     res.status(500).json({ message: "Internal Server Error", error: error });
   }
 });
-
-// // Get courses for a user
-// app.get("/users/:id/courses", async (req, res) => {
-//   const userId = req.params.id;
-
-//   try {
-//     if (!connection) {
-//       throw new Error("MySQL connection is not established.");
-//     }
-//     const [rows] = await connection.query(
-//       "SELECT courses.* FROM courses JOIN student_courses ON courses.course_id = student_courses.course_id WHERE student_courses.student_id = ?",
-//       [userId]
-//     );
-//     res.json({ courses: rows });
-//   } catch (error) {
-//     console.error("Error:", error);
-//     res.status(500).json({ message: "Internal Server Error", error: error });
-//   }
-// });

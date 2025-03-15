@@ -24,10 +24,10 @@ import {
 } from "@chatscope/use-chat";
 import { MessageContent, TextContent, User } from "@chatscope/use-chat";
 
-import { sendMessage as send } from "@/repository/chat";
+import { sendMessage as send } from "@/repository/sendMessage";
 import Button from "@mui/material/Button";
-import { signOut } from "../../utils/auth";
 import { handleSignOut } from "./modules/signout";
+import { useSession } from "next-auth/react";
 
 export const Chat = ({ user, bot }: { user: User; bot: User }) => {
   // Get all chat related values and methods from useChat hook
@@ -44,6 +44,8 @@ export const Chat = ({ user, bot }: { user: User; bot: User }) => {
     setCurrentUser,
   } = useChat();
 
+  const { data: session } = useSession();
+
   useEffect(() => {
     setCurrentUser(user);
   }, [user, setCurrentUser]);
@@ -55,7 +57,6 @@ export const Chat = ({ user, bot }: { user: User; bot: User }) => {
   }, [conversations, activeConversation, setActiveConversation]);
 
   const inputRef = useRef<HTMLInputElement>(null);
-
   useEffect(() => {
     if (inputRef.current && activeConversation) {
       inputRef.current.focus();
@@ -116,7 +117,7 @@ export const Chat = ({ user, bot }: { user: User; bot: User }) => {
       });
 
       try {
-        const response = await send(text);
+        const response = await send(text, session.token.access_token, session.token.provider );
         const botMessage = new ChatMessage({
           id: "",
           content: response,
@@ -158,7 +159,6 @@ export const Chat = ({ user, bot }: { user: User; bot: User }) => {
 
     return undefined;
   }, [activeConversation, getUser]);
-
 
   return (
     <MainContainer responsive>

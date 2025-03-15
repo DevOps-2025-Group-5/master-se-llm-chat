@@ -1,19 +1,27 @@
 version: "3.3"
 services:
-  # auth-db:
-  #   image: postgres:latest
-  #   restart: unless-stopped
-  #   env_file: ./.env
-  #   environment:
-  #     - POSTGRES_USER=$POSTGRES_USER
-  #     - POSTGRES_PASSWORD=$POSTGRES_PASSWORD
-  #     - POSTGRES_DB=$POSTGRES_DB
-  #     - POSTGRES_LOCAL_PORT=$POSTGRES_LOCAL_PORT
-  #     - POSTGRES_DOCKER_PORT=$POSTGRES_DOCKER_PORT
-  #   ports:
-  #     - $POSTGRES_LOCAL_PORT:$POSTGRES_DOCKER_PORT
-  #   volumes:
-  #     - auth_data:/var/lib/postgresql/data
+  user-db:
+    image: mysql:latest
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      - MYSQL_ROOT_PASSWORD=$USERDB_MYSQL_ROOT_PASSWORD
+      - MYSQL_DATABASE=$USERDB_MYSQL_DATABASE
+      - MYSQL_USER=$USERDB_MYSQL_USER
+      - MYSQL_PASSWORD=$USERDB_MYSQL_PASSWORD
+      - MYSQL_DATABASE=$USERDB_MYSQL_DATABASE
+      - USERDB_MYSQL_LOCAL_PORT=$USERDB_MYSQL_LOCAL_PORT
+      - USERDB_MYSQL_DOCKER_PORT=$USERDB_MYSQL_DOCKER_PORT
+    ports:
+      - $USERDB_MYSQL_LOCAL_PORT:$USERDB_MYSQL_DOCKER_PORT
+    volumes:
+      - user_data:/var/lib/mysql
+      # - ./sqldata/student_data:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
   student-db:
     image: mysql:latest
     restart: unless-stopped
@@ -59,7 +67,9 @@ services:
       - /app/node_modules
 
   chat-client:
-    build: ./client
+    build:
+      context: ./client
+      dockerfile: Dockerfile
     restart: on-failure
     command: npm run dev
     env_file:
@@ -68,9 +78,15 @@ services:
       - $CLIENT_PORT:$CLIENT_PORT
     environment:
       - AUTH_SECRET=$AUTH_SECRET
+      - BACKEND_ENTRYPOINT=$BACKEND_ENTRYPOINT
+      - NODE_PORT=$NODE_PORT
+      - USERDB_URL=mysql://root:$USERDB_MYSQL_ROOT_PASSWORD@user-db:$USERDB_MYSQL_DOCKER_PORT/$USERDB_MYSQL_DATABASE
     stdin_open: true
     depends_on:
-      - chat-api
+      user-db:
+        condition: service_healthy
+      chat-api:
+        condition: service_started
     tty: true
     volumes:
       - ./client:/app
@@ -78,4 +94,5 @@ services:
 
 volumes:
   student_llm_chat_data:
+  user_data:
   # auth_data:

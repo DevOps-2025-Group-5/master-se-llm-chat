@@ -21,10 +21,14 @@ import { useEffect, useState } from "react";
 import { AutoDraft } from "@chatscope/use-chat/dist/enums/AutoDraft";
 import { Chat } from "./Chat";
 import React from "react";
-import { Session } from "next-auth";
+import { useSession } from "next-auth/react";
 
-export const ChatWindow = ({ session }: { session: Session }) => {
+const secret = process.env.AUTH_SECRET;
+
+export const ChatWindow = () => {
   const [isClient, setIsClient] = useState(false);
+  const { data: session } = useSession();
+
   useEffect(() => {
     setIsClient(true);
   }, []);
@@ -33,8 +37,10 @@ export const ChatWindow = ({ session }: { session: Session }) => {
     return null;
   }
 
+  //   console.log("session", session);
+
   const loggedInUser = new User({
-    id: "1",
+    id: session.token?.id.toString() || session.sub,
     username: session.user.name,
     avatar: session.user.image,
     presence: new Presence({ status: UserStatus.Available, description: "" }),
@@ -45,7 +51,7 @@ export const ChatWindow = ({ session }: { session: Session }) => {
   });
 
   const chatAIUser = new User({
-    id: "2",
+    id: "chatbot",
     username: "AI Bot",
     avatar: "/bot.svg",
     presence: new Presence({ status: UserStatus.Available, description: "" }),
