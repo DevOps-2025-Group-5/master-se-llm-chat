@@ -8,6 +8,7 @@ declare module "next-auth" {
       name: string | null;
     };
     expires: string;
+    sub: string | null;
     token: {
       access_token: string | null;
       avatar_url: string | null;

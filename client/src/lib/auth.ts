@@ -1,4 +1,4 @@
-import NextAuth from "next-auth";
+import NextAuth, { AuthError } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import type { Provider } from "next-auth/providers";
 import GitHub from "next-auth/providers/github";
@@ -18,18 +18,21 @@ const providers: Provider[] = [
       password: {},
     },
     authorize: async (credentials) => {
-      const validated = await schema.parse({
-        email: credentials.email,
-        password: credentials.password,
-      });
-
-      console.log("credentials", credentials);
+      let validated;
+      try {
+        validated = await schema.parse({
+          email: credentials.email,
+          password: credentials.password,
+        });
+      } catch (error) {
+        return null;
+      }
       const user = await prisma.user.findFirst({
         where: { email: validated.email, password: validated.password },
       });
       console.log("user", user);
       if (!user) {
-        throw new Error("Invalid credentials");
+        return null;
       }
       return user;
     },
@@ -50,7 +53,7 @@ export const providerMap = providers.map((provider) => {
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers,
   secret: process.env.AUTH_SECRET,
-  adapter: adapter,
+  // adapter: adapter,
   callbacks: {
     async jwt({ token, user, account, profile, session }) {
       console.log(token);
@@ -63,6 +66,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async session({ session, token, user }) {
       return { ...session, token, ...user };
     },
+    async authorized({ auth }) {
+      console.log("authorized", auth);
+      return true;
+    },
   },
   pages: {
     signIn: "/auth/signin",
@@ -72,23 +79,32 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     strategy: "jwt",
   },
   jwt: {
-    // encode: async function (params) {
-    //   if (params.token?.credentials) {
-    //     const sessionToken = uuid();
-    //     if (!params.token.sub) {
-    //       throw new Error("No user ID found in token");
-    //     }
-    //     const createdSession = await adapter?.createSession?.({
-    //       sessionToken: sessionToken,
-    //       userId: params.token.sub,
-    //       expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-    //     });
-    //     if (!createdSession) {
-    //       throw new Error("Failed to create session");
-    //     }
-    //     return sessionToken;
-    //   }
-    //   return authEncode(params);
-    // },
+    encode: async function (params) {
+      if (!params.token?.credentials) {
+        const user = await prisma.user.findFirst({
+          where: { email: params.token.email },
+        });
+        if (!user) {
+          const newUser = await prisma.user.create({
+            data: {
+              id: params.token.id.toString() as string,
+              email: params.token.email,
+              name: params.token.name,
+              username: params.token.name,
+              image: params.token.image as string,
+              accounts: {
+                create: {
+                  id: params.token.login as string,
+                  provider: params.token.provider as string,
+                  type: params.token.type as string,
+                  providerAccountId: params.token.providerAccountId as string,
+                },
+              },
+            },
+          });
+        }
+      }
+      return authEncode(params);
+    },
   },
 });
