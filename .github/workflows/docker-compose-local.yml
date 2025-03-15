@@ -28,6 +28,9 @@ jobs:
       #     fi
       #     echo "✅ .env file not found. Proceeding..."
 
+      - name: Delete env file if it exists
+        run: rm -f .env && rm -f .env-sample
+
       - name: Install Docker Compose
         run: |
           sudo apt-get update
