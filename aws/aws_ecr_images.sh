@@ -47,6 +47,8 @@ elif [ "$1" == "delete" ]; then
     else
         echo -e "${RED}Docker image ${CLIENT_IMAGE_TAG} does not exist${NC}"
     fi
+elif [ "$1" == "login" ]; then
+    aws ecr get-login-password --region eu-central-1 | docker login --username AWS --password-stdin 536697267559.dkr.ecr.eu-central-1.amazonaws.com
 else
     echo -e "${YELLOW}Usage: $0 { build | push | delete }${NC}"
     exit 1
