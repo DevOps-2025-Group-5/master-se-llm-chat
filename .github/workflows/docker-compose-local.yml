@@ -3,11 +3,11 @@ name: Docker Compose CI (Manual)
 on:
   push:
     branches:
-      - main  
+      - main
   pull_request:
     branches:
-      - main 
-  workflow_dispatch:  
+      - main
+  workflow_dispatch:
 
 env:
   MYSQL_DATABASE: chatdb
@@ -50,25 +50,12 @@ jobs:
 
       - name: Create Temporary .env File
         run: |
-          echo "MYSQL_DATABASE=${MYSQL_DATABASE}" >> .env
-          echo "MYSQL_LOCAL_PORT=${MYSQL_LOCAL_PORT}" >> .env
-          echo "MYSQL_DOCKER_PORT=${MYSQL_DOCKER_PORT}" >> .env
-          echo "NODE_PORT=${NODE_PORT}" >> .env
-          echo "MYSQL_USER=${MYSQL_USER}" >> .env
-          echo "CLIENT_PORT=${CLIENT_PORT}" >> .env
           echo "MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }}" >> .env
           echo "AUTH_SECRET=${{ secrets.AUTH_SECRET }}" >> .env
-          echo "USERDB_MYSQL_DATABASE=${USERDB_MYSQL_DATABASE}" >> .env
-          echo "USERDB_MYSQL_LOCAL_PORT=${USERDB_MYSQL_LOCAL_PORT}" >> .env
-          echo "USERDB_MYSQL_DOCKER_PORT=${USERDB_MYSQL_DOCKER_PORT}" >> .env
-          echo "USERDB_MYSQL_USER=${USERDB_MYSQL_USER}" >> .env
           echo "USERDB_MYSQL_ROOT_PASSWORD=${{ secrets.USERDB_MYSQL_ROOT_PASSWORD }}" >> .env
           echo "USERDB_MYSQL_PASSWORD=${{ secrets.USERDB_MYSQL_PASSWORD }}" >> .env
           echo "MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}" >> .env
-          echo "BACKEND_ENTRYPOINT=${BACKEND_ENTRYPOINT}" >> .env
-          echo "CORS_ORIGIN=${CORS_ORIGIN}" >> .env
           echo "✅ .env file created."
-        
 
       - name: Build and Start Services
         run: docker-compose --env-file .env up -d --build
