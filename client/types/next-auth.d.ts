@@ -29,7 +29,7 @@ declare module "next-auth" {
       hireable: boolean | null;
       html_url: string | null;
       iat: number | null;
-      id: number | null;
+      id: number | string | null;
       image: string | null;
       jti: string | null;
       location: string | null;

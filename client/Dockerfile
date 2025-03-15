@@ -10,6 +10,11 @@ COPY . .
 # Install the dependencies
 RUN npm install
 
+# ARG USERDB_URL
+# ENV USERDB_URL=${USERDB_URL}
+
+# RUN npm run db:migrate
+
 ARG CLIENT_PORT
 ENV CLIENT_PORT=${CLIENT_PORT}
 

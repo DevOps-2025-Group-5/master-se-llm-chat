@@ -15,7 +15,8 @@ export const SignIn = async () => {
       signIn={signInUser}
       providers={providerMap}
       slotProps={{
-        emailField: { autoFocus: false },
+        emailField: { autoFocus: false, name: "email" },
+        passwordField: { name: "password" },
         form: { noValidate: true },
       }}
     />

@@ -25,9 +25,6 @@ dotenv.config();
 // Entry point for the server
 const PORT = process.env.NODE_PORT || 3000;
 
-const clientId = process.env.AUTH_GITHUB_ID;
-const clientSecret = process.env.AUTH_GITHUB_SECRET;
-
 // Database initialization
 const datasource = new DataSource({
   // @ts-ignore

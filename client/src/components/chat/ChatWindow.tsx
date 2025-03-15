@@ -23,7 +23,6 @@ import { Chat } from "./Chat";
 import React from "react";
 import { useSession } from "next-auth/react";
 
-
 const secret = process.env.AUTH_SECRET;
 
 export const ChatWindow = () => {
@@ -38,10 +37,10 @@ export const ChatWindow = () => {
     return null;
   }
 
-//   console.log("session", session);
+  //   console.log("session", session);
 
   const loggedInUser = new User({
-    id: session.token.id.toString(),
+    id: session.token?.id.toString() || session.sub,
     username: session.user.name,
     avatar: session.user.image,
     presence: new Presence({ status: UserStatus.Available, description: "" }),
