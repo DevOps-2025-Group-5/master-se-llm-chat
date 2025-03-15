@@ -3,22 +3,22 @@ name: Docker Compose CI (Manual)
 on:
   push:
     branches:
-      - main  
+      - main
   pull_request:
     branches:
-      - main 
-  workflow_dispatch:  
+      - main
+  workflow_dispatch:
 
 env:
   MYSQL_DATABASE: chatdb
-  MYSQL_LOCAL_PORT: 3307
+  MYSQL_LOCAL_PORT: 3306
   MYSQL_DOCKER_PORT: 3306
   NODE_PORT: 5005
   MYSQL_USER: chatuser
   CLIENT_PORT: 3000
   USERDB_MYSQL_DATABASE: userdb
   USERDB_MYSQL_LOCAL_PORT: 3307
-  USERDB_MYSQL_DOCKER_PORT: 3307
+  USERDB_MYSQL_DOCKER_PORT: 3306
   USERDB_MYSQL_USER: userdbuser
   BACKEND_ENTRYPOINT: http://localhost
   CORS_ORIGIN: http://localhost:3000
@@ -68,7 +68,6 @@ jobs:
           echo "BACKEND_ENTRYPOINT=${BACKEND_ENTRYPOINT}" >> .env
           echo "CORS_ORIGIN=${CORS_ORIGIN}" >> .env
           echo "✅ .env file created."
-        
 
       - name: Build and Start Services
         run: docker-compose --env-file .env up -d --build
