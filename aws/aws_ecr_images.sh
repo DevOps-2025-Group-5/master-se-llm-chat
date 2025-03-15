@@ -15,10 +15,10 @@ CLIENT_IMAGE_TAG=${ECR_PREFIX}/${CLIENT_NAME}:${IMAGE_TAG}
 
 if [ "$1" == "build" ]; then
     echo -e "${GREEN}Build docker image: ${CHAT_API_IMAGE_TAG}${NC}"
-    docker build -t  ${CHAT_API_IMAGE_TAG} ../chat-api
+    docker build -t  ${CHAT_API_IMAGE_TAG} ../chat-api --no-cache
 
     echo -e "${GREEN}Build docker image: ${CLIENT_IMAGE_TAG}${NC}"
-    docker build -t  ${CLIENT_IMAGE_TAG} ../client
+    docker build -t  ${CLIENT_IMAGE_TAG} ../client --no-cache
 elif [ "$1" == "push" ]; then
     if docker images -q "${CHAT_API_IMAGE_TAG}"; then
         echo -e "${GREEN}Push docker image to ECR: ${CHAT_API_IMAGE_TAG}${NC}"
