@@ -38,9 +38,9 @@ jobs:
       - name: Check if Images Exists in ECR
         id: check-image
         run: |
-          ECR_REGISTRY="${{ secrets.ECR_REGISTRY }}"
-          ECR_CHAT_REPO="${{ secrets.ECR_CHAT_REPO }}"
-          ECR_CLIENT_REPO="${{ secrets.ECR_CLIENT_REPO }}"
+          ECR_REGISTRY="${{ vars.ECR_REGISTRY }}"
+          ECR_CHAT_REPO="${{ vars.ECR_CHAT_REPO }}"
+          ECR_CLIENT_REPO="${{ vars.ECR_CLIENT_REPO }}"
           CHAT_IMAGE_TAG="${{ env.CHAT_DOCKER_HASH }}"
           CLIENT_IMAGE_TAG="${{ env.CLIENT_DOCKER_HASH }}"
 
@@ -59,8 +59,8 @@ jobs:
       - name: Build and Push Chat Docker Image (Only If Needed)
         if: env.CHAT_IMAGE_EXISTS == 'false'
         run: |
-          ECR_REGISTRY="${{ secrets.ECR_REGISTRY }}"
-          ECR_CHAT_REPO="${{ secrets.ECR_CHAT_REPO }}"
+          ECR_REGISTRY="${{ vars.ECR_REGISTRY }}"
+          ECR_CHAT_REPO="${{ vars.ECR_CHAT_REPO }}"
 
           docker build -t $ECR_REGISTRY/$ECR_CHAT_REPO:latest ./chat-api
           docker push $ECR_REGISTRY/$ECR_CHAT_REPO:latest
@@ -68,8 +68,8 @@ jobs:
       - name: Build and Push Client Docker Image (Only If Needed)
         if: env.CLIENT_IMAGE_EXISTS == 'false'
         run: |
-          ECR_REGISTRY="${{ secrets.ECR_REGISTRY }}"
-          ECR_CLIENT_REPO="${{ secrets.ECR_CHAT_REPO }}"
+          ECR_REGISTRY="${{ vars.ECR_REGISTRY }}"
+          ECR_CLIENT_REPO="${{ vars.ECR_CLIENT_REPO }}"
 
           docker build -t $ECR_REGISTRY/$ECR_CLIENT_REPO:latest ./client
           docker push $ECR_REGISTRY/$ECR_CLIENT_REPO:latest

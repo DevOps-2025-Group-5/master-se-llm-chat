@@ -26,9 +26,9 @@ jobs:
       - name: Get Latest Image Tag from ECR
         id: get-latest-tag
         run: |
-          ECR_REGISTRY="${{ secrets.ECR_REGISTRY }}"
-          ECR_CHAT_REPO="${{ secrets.ECR_CHAT_REPO }}"
-          ECR_CLIENT_REPO="${{ secrets.ECR_CLIENT_REPO }}"
+          ECR_REGISTRY="${{ vars.ECR_REGISTRY }}"
+          ECR_CHAT_REPO="${{ vars.ECR_CHAT_REPO }}"
+          ECR_CLIENT_REPO="${{ vars.ECR_CLIENT_REPO }}"
           echo "ECR_CHAT_IMAGE=$ECR_REGISTRY/$ECR_CHAT_REPO:latest" >> $GITHUB_ENV
           echo "ECR_CLIENT_IMAGE=$ECR_REGISTRY/$ECR_CLIENT_REPO:latest" >> $GITHUB_ENV
 
@@ -40,7 +40,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
           script: |
             echo "Logging into AWS ECR..."
-            aws ecr get-login-password --region ${{ vars.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.ECR_REGISTRY }}
+            aws ecr get-login-password --region ${{ vars.AWS_REGION }} | docker login --username AWS --password-stdin ${{ vars.ECR_REGISTRY }}
 
             echo "Stopping all containers on EC2 instance..."
             docker ps -q | xargs -r docker stop
@@ -81,6 +81,9 @@ jobs:
                 container_name: client
                 restart: unless-stopped
                 command: npm run dev
+                depends_on:
+                  chat-api:
+                    condition: service_started
                 ports:
                   - "${{ vars.CLIENT_PORT }}:${{ vars.CLIENT_PORT }}"
                 environment:
