@@ -57,40 +57,43 @@ jobs:
                 image: ${{ env.ECR_CHAT_IMAGE }}
                 container_name: chat-api
                 restart: unless-stopped
-                command: npm run start
+                command: sh -c "node src/index.js"
                 ports:
                   - "${{ vars.NODE_PORT }}:${{ vars.NODE_PORT }}"
                 environment:
                   - MYSQL_HOST=${{ vars.MYSQL_HOST }}
                   - MYSQL_USER=${{ vars.MYSQL_USER }}
                   - MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}
-                  - MYSQL_NAME=${{ vars.MYSQL_NAME }}
+                  - MYSQL_DATABASE=${{ vars.MYSQL_NAME }}
                   - MYSQL_DOCKER_PORT=${{ vars.MYSQL_PORT }}
                   - MYSQL_LOCAL_PORT=${{ vars.MYSQL_PORT }}
                   - USERDB_MYSQL_HOST=${{ vars.MYSQL_HOST }}
                   - USERDB_MYSQL_USER=${{ vars.MYSQL_USER }}
                   - USERDB_MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}
-                  - USERDB_MYSQL_NAME=${{ vars.USERDB_MYSQL_NAME }}
+                  - USERDB_MYSQL_DATABASE=${{ vars.USERDB_MYSQL_NAME }}
                   - USERDB_MYSQL_DOCKER_PORT=${{ vars.MYSQL_PORT }}
                   - USERDB_MYSQL_LOCAL_PORT=${{ vars.MYSQL_PORT }}
                   - AUTH_SECRET=${{ secrets.AUTH_SECRET }}
                   - NODE_PORT=${{ vars.NODE_PORT }}
+                  - CORS_ORIGIN=${{ vars.EC2_HOST }}:${{ vars.CLIENT_PORT }}
+                  - OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
 
               chat-client:
                 image: ${{ env.ECR_CLIENT_IMAGE }}
                 container_name: client
                 restart: unless-stopped
-                command: npm run dev
-                depends_on:
-                  chat-api:
-                    condition: service_started
+                command: sh -c "npm run build && npm run start"
                 ports:
                   - "${{ vars.CLIENT_PORT }}:${{ vars.CLIENT_PORT }}"
                 environment:
                   - AUTH_SECRET=${{ secrets.AUTH_SECRET }}
                   - BACKEND_ENTRYPOINT=${{ vars.EC2_HOST }}
                   - NODE_PORT=${{ vars.NODE_PORT }}
-                  - USERDB_URL=mysql://root:${{ secrets.MYSQL_PASSWORD }}@${{ vars.MYSQL_HOST }}:${{ vars.MYSQL_PORT }}/${{ vars.USERDB_MYSQL_NAME }}
+                  - USERDB_URL=mysql://${{ vars.MYSQL_USER }}:${{ secrets.MYSQL_PASSWORD }}@${{ vars.MYSQL_HOST }}:${{ vars.MYSQL_PORT }}/${{ vars.USERDB_MYSQL_NAME }}
+                  - AUTH_GITHUB_ID=${{ secrets.AUTH_GITHUB_ID }}
+                  - AUTH_GITHUB_SECRET=${{ secrets.AUTH_GITHUB_SECRET }}
+                  - AUTH_TRUST_HOST=true
+                  - NEXTAUTH_URL=http://${{ vars.EC2_HOST }}:${{ vars.CLIENT_PORT }}/api/auth
             EOF
 
             echo "Pulling latest image..."
