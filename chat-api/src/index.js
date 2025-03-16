@@ -13,12 +13,22 @@ import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { trimMessages } from "@langchain/core/messages";
 import cors from "cors";
 import { z } from "zod";
-import { dbConfig, getTableInfo, startConnection } from "./repository/table.js";
+import {
+  dbConfig,
+  getTableInfo,
+  startConnection,
+} from "./repository/studentTable.js";
+import {
+  getSessionInfo,
+  startConnection as userDbConnection,
+} from "./repository/userTable.js";
 import { SqlDatabase } from "langchain/sql_db";
 import { DataSource } from "typeorm";
 import { QuerySqlTool } from "langchain/tools/sql";
 import { promptTemplates } from "./prompt/promptTemplates.js";
 import { getUserData } from "./repository/github.js";
+import jwt from "jsonwebtoken";
+import { decode } from "next-auth/jwt";
 
 dotenv.config();
 
@@ -37,6 +47,11 @@ const datasource = new DataSource({
 const db = await SqlDatabase.fromDataSourceParams({
   appDataSource: datasource,
 });
+
+const userDb = await userDbConnection();
+if (!db || !userDb) {
+  throw new Error("Database connection failed");
+}
 
 // Get OpenAI API key
 const openaiApiKey = process.env.OPENAI_API_KEY;
@@ -207,7 +222,8 @@ app.listen(PORT, () => {
 
 // @ts-ignore
 app.post("/chat", async (req, res) => {
-  const { newMessage, provider } = req.body;
+  const { newMessage, provider, id } = req.body;
+  console.log(id);
 
   let userData;
   if (provider === "github") {
@@ -222,6 +238,45 @@ app.post("/chat", async (req, res) => {
       res.status(401).json({ message: `Authorization Failed`, error: error });
       return;
     }
+  } else {
+    try {
+      const session = await getSessionInfo(id, userDb);
+      console.log("Session:", session);
+      console.log("secret", process.env.AUTH_SECRET,)
+      const sessionToken = session[0].sessionToken;
+      console.log("Session Token:", sessionToken);
+      userData = decode({
+        token: sessionToken,
+        secret: process.env.AUTH_SECRET,
+        salt: "authjs.session-token",
+        maxAge: 2592000,
+      });
+      console.log("User Data:", userData);
+    } catch (error) {
+      console.error(error);
+      res.status(401).json({ message: `Authorization Failed`, error: error });
+      return;
+    }
+    //   try {
+    //     if (!req.headers["authorization"]) {
+    //       throw new Error("Authorization failed");
+    //     }
+    //     const accessToken = req.headers.authorization.split(" ")[1];
+    //     console.log("Access Token:", accessToken);
+    //     console.log("Auth Secret:", process.env.AUTH_SECRET);
+    //     // decrypt the token with jsonwebtoken
+    //     const decodedToken = await decode({
+    //       token: accessToken,
+    //       secret: process.env.AUTH_SECRET,
+    //       salt: "5",
+    //     });
+    //     userData = decodedToken;
+    //     console.log("Decoded Token:", decodedToken);
+    //   } catch (error) {
+    //     console.error(error);
+    //     res.status(401).json({ message: `Authorization Failed`, error: error });
+    //     return;
+    //   }
   }
 
   // Get userID from the token

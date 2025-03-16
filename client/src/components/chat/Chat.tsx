@@ -117,7 +117,7 @@ export const Chat = ({ user, bot }: { user: User; bot: User }) => {
       });
 
       try {
-        const response = await send(text, session.token.access_token, session.token.provider );
+        const response = await send(text, session.token.access_token, session.token.provider, user.id );
         const botMessage = new ChatMessage({
           id: "",
           content: response,
