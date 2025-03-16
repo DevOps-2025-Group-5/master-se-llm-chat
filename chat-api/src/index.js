@@ -13,22 +13,14 @@ import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { trimMessages } from "@langchain/core/messages";
 import cors from "cors";
 import { z } from "zod";
-import {
-  dbConfig,
-  getTableInfo,
-  startConnection,
-} from "./repository/studentTable.js";
-import {
-  getSessionInfo,
-  startConnection as userDbConnection,
-} from "./repository/userTable.js";
+import { dbConfig } from "./repository/studentTable.js";
+import { startConnection as userDbConnection } from "./repository/userTable.js";
 import { SqlDatabase } from "langchain/sql_db";
 import { DataSource } from "typeorm";
 import { QuerySqlTool } from "langchain/tools/sql";
 import { promptTemplates } from "./prompt/promptTemplates.js";
 import { getUserData } from "./repository/github.js";
-import jwt from "jsonwebtoken";
-import { decode } from "next-auth/jwt";
+import { getUserData as getUserDBData } from "./repository/userTable.js";
 
 dotenv.config();
 
@@ -240,43 +232,15 @@ app.post("/chat", async (req, res) => {
     }
   } else {
     try {
-      const session = await getSessionInfo(id, userDb);
-      console.log("Session:", session);
-      console.log("secret", process.env.AUTH_SECRET,)
-      const sessionToken = session[0].sessionToken;
-      console.log("Session Token:", sessionToken);
-      userData = decode({
-        token: sessionToken,
-        secret: process.env.AUTH_SECRET,
-        salt: "authjs.session-token",
-        maxAge: 2592000,
-      });
-      console.log("User Data:", userData);
+      // const sessionToken =
+      const res = await getUserDBData(id, userDb);
+      userData = res[0];
+  
     } catch (error) {
       console.error(error);
       res.status(401).json({ message: `Authorization Failed`, error: error });
       return;
     }
-    //   try {
-    //     if (!req.headers["authorization"]) {
-    //       throw new Error("Authorization failed");
-    //     }
-    //     const accessToken = req.headers.authorization.split(" ")[1];
-    //     console.log("Access Token:", accessToken);
-    //     console.log("Auth Secret:", process.env.AUTH_SECRET);
-    //     // decrypt the token with jsonwebtoken
-    //     const decodedToken = await decode({
-    //       token: accessToken,
-    //       secret: process.env.AUTH_SECRET,
-    //       salt: "5",
-    //     });
-    //     userData = decodedToken;
-    //     console.log("Decoded Token:", decodedToken);
-    //   } catch (error) {
-    //     console.error(error);
-    //     res.status(401).json({ message: `Authorization Failed`, error: error });
-    //     return;
-    //   }
   }
 
   // Get userID from the token
@@ -285,14 +249,6 @@ app.post("/chat", async (req, res) => {
   // Use userId for Thread ID for keeping track of the conversation
   const config = { configurable: { thread_id: parseInt(userId) } };
   try {
-    // console.log(inputs);
-    // console.log("\n====\n");
-    // for await (const step of await llmApp.stream(inputs, {
-    //   streamMode: "updates",
-    // })) {
-    //   console.log(step);
-    //   console.log("\n====\n");
-    // }
     const response = await llmApp.invoke(
       { question: newMessage, id: userId },
       config

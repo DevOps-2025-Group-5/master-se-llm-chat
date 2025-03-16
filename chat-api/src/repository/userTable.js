@@ -53,6 +53,16 @@ export const getAllTableSchemas = async (connection) => {
   return allTableSchemas;
 };
 
+export const getUserData = async (id, connection) => {
+  const query = `
+        SELECT *
+        FROM User
+        WHERE id = ?
+        `;
+  const [rows] = await connection.query(query, [id]);
+  return rows;
+};
+
 export const getSessionInfo = async (sessionId, connection) => {
   const query = `
       SELECT *

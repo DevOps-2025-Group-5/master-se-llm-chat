@@ -5,27 +5,24 @@ import { sign } from "jsonwebtoken";
 const backendEntrypoint = `${process.env.BACKEND_ENTRYPOINT}:${process.env.BACKEND_PORT}`;
 const secret = process.env.AUTH_SECRET;
 
-const generateAccessToken = async (
-  id: string,
-  accessToken: string,
-  provider: string
-) => {
-  if (provider === "credentials") {
-    return sign({ id }, secret, { expiresIn: "1h" });
-  }
-  return accessToken;
-};
+// const generateAccessToken = async (
+//   id: string,
+//   accessToken: string,
+//   provider: string
+// ) => {
+//   if (provider === "credentials") {
+//     return sign({ id }, secret, { expiresIn: "1h" });
+//   }
+//   return accessToken;
+// };
 
 export const sendMessage = async (message, accessToken, provider, id) => {
   try {
-    const token = await generateAccessToken(id, accessToken, provider);
-    console.log("Token:", token);
-
     const response = await fetch(`${backendEntrypoint}/chat`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${accessToken}`,
       },
       body: JSON.stringify({ newMessage: message, provider, id: id }),
     });
