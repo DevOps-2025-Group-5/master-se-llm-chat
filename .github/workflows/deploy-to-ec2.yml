@@ -5,8 +5,7 @@ on:
     workflows: ["Push Docker Image to AWS ECR"]  # Ensures this runs after the first workflow
     types:
       - completed
-    branches:
-      - erik/automate-ecr-push
+  workflow_dispatch:
 
 jobs:
   deploy:
