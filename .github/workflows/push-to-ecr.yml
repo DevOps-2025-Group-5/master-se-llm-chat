@@ -1,0 +1,42 @@
+name: Push Docker Image to AWS ECR
+
+on:
+  push:
+    branches:
+      - erik/automate-ecr-push
+
+jobs:
+  push_to_ecr:
+    name: Build & Push Docker Image
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to AWS ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build Docker Image
+        run: |
+          ECR_REGISTRY="${{ secrets.ECR_REGISTRY }}"
+          ECR_CHAT_REPO="${{ secrets.ECR_CHAT_REPO }}"
+          ECR_CLIENT_REPO="${{ secrets.ECR_CLIENT_REPO }}"
+          docker build -t $ECR_REGISTRY/$ECR_CHAT_REPO:latest ./chat-api
+          docker build -t $ECR_REGISTRY/$ECR_CLIENT_REPO:latest ./client
+
+      - name: Push Docker Image to ECR
+        run: |
+          ECR_REGISTRY="${{ secrets.ECR_REGISTRY }}"
+          ECR_CHAT_REPO="${{ secrets.ECR_CHAT_REPO }}"
+          ECR_CLIENT_REPO="${{ secrets.ECR_CLIENT_REPO }}"
+          docker push $ECR_REGISTRY/$ECR_CHAT_REPO:latest
+          docker push $ECR_REGISTRY/$ECR_CLIENT_REPO:latest
