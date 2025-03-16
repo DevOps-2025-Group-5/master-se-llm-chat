@@ -1,0 +1,75 @@
+name: Push Docker Image to AWS ECR
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  push_to_ecr:
+    name: Build & Push Docker Image
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Login to AWS ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Compute Docker Context Hash
+        id: hash
+        run: |
+          echo "CHAT_DOCKER_HASH=$(tar -cf - ./chat-api/Dockerfile src | sha256sum | cut -d ' ' -f1)" >> $GITHUB_ENV
+          echo "CLIENT_DOCKER_HASH=$(tar -cf - ./client/Dockerfile src | sha256sum | cut -d ' ' -f1)" >> $GITHUB_ENV
+
+      - name: Check if Images Exists in ECR
+        id: check-image
+        run: |
+          ECR_REGISTRY="${{ secrets.ECR_REGISTRY }}"
+          ECR_CHAT_REPO="${{ secrets.ECR_CHAT_REPO }}"
+          ECR_CLIENT_REPO="${{ secrets.ECR_CLIENT_REPO }}"
+          CHAT_IMAGE_TAG="${{ env.CHAT_DOCKER_HASH }}"
+          CLIENT_IMAGE_TAG="${{ env.CLIENT_DOCKER_HASH }}"
+
+          if aws ecr describe-images --repository-name $ECR_CHAT_REPO --image-ids imageTag=$CHAT_IMAGE_TAG > /dev/null 2>&1; then
+            echo "CHAT_IMAGE_EXISTS=true" >> $GITHUB_ENV
+          else
+            echo "CHAT_IMAGE_EXISTS=false" >> $GITHUB_ENV
+          fi
+
+          if aws ecr describe-images --repository-name $ECR_CLIENT_REPO --image-ids imageTag=$IMAGE_TAG > /dev/null 2>&1; then
+            echo "CLIENT_IMAGE_EXISTS=true" >> $GITHUB_ENV
+          else
+            echo "CLIENT_IMAGE_EXISTS=false" >> $GITHUB_ENV
+          fi
+
+      - name: Build and Push Chat Docker Image (Only If Needed)
+        if: env.CHAT_IMAGE_EXISTS == 'false'
+        run: |
+          ECR_REGISTRY="${{ secrets.ECR_REGISTRY }}"
+          ECR_CHAT_REPO="${{ secrets.ECR_CHAT_REPO }}"
+
+          docker build -t $ECR_REGISTRY/$ECR_CHAT_REPO:latest ./chat-api
+          docker push $ECR_REGISTRY/$ECR_CHAT_REPO:latest
+
+      - name: Build and Push Client Docker Image (Only If Needed)
+        if: env.CLIENT_IMAGE_EXISTS == 'false'
+        run: |
+          ECR_REGISTRY="${{ secrets.ECR_REGISTRY }}"
+          ECR_CLIENT_REPO="${{ secrets.ECR_CHAT_REPO }}"
+
+          docker build -t $ECR_REGISTRY/$ECR_CLIENT_REPO:latest ./client
+          docker push $ECR_REGISTRY/$ECR_CLIENT_REPO:latest

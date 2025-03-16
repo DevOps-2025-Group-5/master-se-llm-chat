@@ -1,0 +1,97 @@
+name: Deploy to EC2
+
+on:
+  workflow_run:
+    workflows: ["Push Docker Image to AWS ECR"]  # Ensures this runs after the first workflow
+    types:
+      - completed
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy Docker Container on EC2
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Get Latest Image Tag from ECR
+        id: get-latest-tag
+        run: |
+          ECR_REGISTRY="${{ secrets.ECR_REGISTRY }}"
+          ECR_CHAT_REPO="${{ secrets.ECR_CHAT_REPO }}"
+          ECR_CLIENT_REPO="${{ secrets.ECR_CLIENT_REPO }}"
+          echo "ECR_CHAT_IMAGE=$ECR_REGISTRY/$ECR_CHAT_REPO:latest" >> $GITHUB_ENV
+          echo "ECR_CLIENT_IMAGE=$ECR_REGISTRY/$ECR_CLIENT_REPO:latest" >> $GITHUB_ENV
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ vars.EC2_HOST }}
+          username: ${{ vars.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+          script: |
+            echo "Logging into AWS ECR..."
+            aws ecr get-login-password --region ${{ vars.AWS_REGION }} | docker login --username AWS --password-stdin $(aws ecr describe-registry --query "registryId" --output text).dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com
+
+            echo "Stopping all containers on EC2 instance..."
+            docker ps -q | xargs -r docker stop
+            docker ps -aq | xargs -r docker rm
+
+            echo "Removing old docker-compose.yml file..."
+            rm -f docker-compose.yml
+
+            echo "Creating new docker-compose.yml file..."
+            cat <<EOF > docker-compose.yml
+            version: '3.3'
+            services:
+              chat-api:
+                image: ${{ env.ECR_CHAT_IMAGE }}
+                container_name: chat-api
+                restart: unless-stopped
+                command: npm run start
+                ports:
+                  - "${{ vars.NODE_PORT }}:${{ vars.NODE_PORT }}"
+                environment:
+                  - MYSQL_HOST=${{ vars.MYSQL_HOST }}
+                  - MYSQL_USER=${{ vars.MYSQL_USER }}
+                  - MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}
+                  - MYSQL_NAME=${{ vars.MYSQL_NAME }}
+                  - MYSQL_DOCKER_PORT=${{ vars.MYSQL_PORT }}
+                  - MYSQL_LOCAL_PORT=${{ vars.MYSQL_PORT }}
+                  - USERDB_MYSQL_HOST=${{ vars.MYSQL_HOST }}
+                  - USERDB_MYSQL_USER=${{ vars.MYSQL_USER }}
+                  - USERDB_MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}
+                  - USERDB_MYSQL_NAME=${{ vars.USERDB_MYSQL_NAME }}
+                  - USERDB_MYSQL_DOCKER_PORT=${{ vars.MYSQL_PORT }}
+                  - USERDB_MYSQL_LOCAL_PORT=${{ vars.MYSQL_PORT }}
+                  - AUTH_SECRET=${{ secrets.AUTH_SECRET }}
+                  - NODE_PORT=${{ vars.NODE_PORT }}
+
+              chat-client:
+                image: ${{ env.ECR_CHAT_IMAGE }}
+                container_name: client
+                restart: unless-stopped
+                command: npm run dev
+                ports:
+                  - "${{ vars.CLIENT_PORT }}:${{ vars.CLIENT_PORT }}"
+                environment:
+                  - AUTH_SECRET=${{ secrets.AUTH_SECRET }}
+                  - BACKEND_ENTRYPOINT=${{ vars.EC2_HOST }}
+                  - NODE_PORT=${{ vars.NODE_PORT }}
+                  - USERDB_URL=mysql://root:${{ secrets.MYSQL_PASSWORD }}@${{ vars.MYSQL_HOST }}:${{ vars.MYSQL_PORT }}/${{ vars.USERDB_MYSQL_NAME }}
+            EOF
+
+            echo "Pulling latest image..."
+            docker-compose pull
+
+            echo "Starting new containers..."
+            docker-compose up -d
