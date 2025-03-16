@@ -46,6 +46,13 @@ jobs:
             docker ps -q | xargs -r docker stop
             docker ps -aq | xargs -r docker rm
 
+            echo "Delete all images on EC2 instance..."
+            docker images -q | xargs -r docker rmi
+
+            echo "Pulling latest images from ECR..."
+            docker pull ${{ env.ECR_CHAT_IMAGE }}
+            docker pull ${{ env.ECR_CLIENT_IMAGE }}
+
             echo "Removing old docker-compose.yml file..."
             rm -f docker-compose.yml
 
