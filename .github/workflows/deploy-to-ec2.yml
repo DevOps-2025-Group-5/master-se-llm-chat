@@ -77,7 +77,7 @@ jobs:
                   - NODE_PORT=${{ vars.NODE_PORT }}
 
               chat-client:
-                image: ${{ env.ECR_CHAT_IMAGE }}
+                image: ${{ env.ECR_CLIENT_IMAGE }}
                 container_name: client
                 restart: unless-stopped
                 command: npm run dev
