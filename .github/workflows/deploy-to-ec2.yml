@@ -82,7 +82,7 @@ jobs:
                   - USERDB_MYSQL_LOCAL_PORT=${{ vars.MYSQL_PORT }}
                   - AUTH_SECRET=${{ secrets.AUTH_SECRET }}
                   - NODE_PORT=${{ vars.NODE_PORT }}
-                  - CORS_ORIGIN=${{ vars.EC2_HOST }}:${{ vars.CLIENT_PORT }}
+                  - CORS_ORIGIN=http://${{ vars.EC2_HOST }}:${{ vars.CLIENT_PORT }}
                   - OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
 
               chat-client:
@@ -94,7 +94,7 @@ jobs:
                   - "${{ vars.CLIENT_PORT }}:${{ vars.CLIENT_PORT }}"
                 environment:
                   - AUTH_SECRET=${{ secrets.AUTH_SECRET }}
-                  - BACKEND_ENTRYPOINT=${{ vars.EC2_HOST }}
+                  - BACKEND_ENTRYPOINT=http://${{ vars.EC2_HOST }}
                   - NODE_PORT=${{ vars.NODE_PORT }}
                   - USERDB_URL=mysql://${{ vars.MYSQL_USER }}:${{ secrets.MYSQL_PASSWORD }}@${{ vars.MYSQL_HOST }}:${{ vars.MYSQL_PORT }}/${{ vars.USERDB_MYSQL_NAME }}
                   - AUTH_GITHUB_ID=${{ secrets.AUTH_GITHUB_ID }}
