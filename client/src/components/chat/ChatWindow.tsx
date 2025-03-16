@@ -40,7 +40,7 @@ export const ChatWindow = () => {
   //   console.log("session", session);
 
   const loggedInUser = new User({
-    id: session.token?.id.toString() || session.sub,
+    id: session.token?.id.toString() || session.id,
     username: session.user.name,
     avatar: session.user.image,
     presence: new Presence({ status: UserStatus.Available, description: "" }),

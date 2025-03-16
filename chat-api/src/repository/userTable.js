@@ -1,5 +1,5 @@
 import mysql from "mysql2/promise";
-import { dbConfig as config } from "../config/db.config.js";
+import { userDbConfig as config } from "../config/db.config.js";
 
 if (!config.host || !config.user || !config.password || !config.database) {
   throw new Error("Database configuration is not set");
@@ -10,7 +10,6 @@ export const dbConfig = {
   user: config.user,
   password: config.password,
   database: config.database,
-  type: config.dialect,
 };
 
 // MySQL connection
@@ -52,4 +51,24 @@ export const getAllTableSchemas = async (connection) => {
   }
 
   return allTableSchemas;
+};
+
+export const getUserData = async (id, connection) => {
+  const query = `
+        SELECT *
+        FROM User
+        WHERE id = ?
+        `;
+  const [rows] = await connection.query(query, [id]);
+  return rows;
+};
+
+export const getSessionInfo = async (sessionId, connection) => {
+  const query = `
+      SELECT *
+      FROM Session
+      WHERE id = ?
+      `;
+  const [rows] = await connection.query(query, [sessionId]);
+  return rows;
 };

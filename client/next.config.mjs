@@ -9,7 +9,7 @@ const nextConfig = {
     USERDB_MYSQL_NAME: process.env.USERDB_MYSQL_NAME,
     USERDB_MYSQL_DOCKER_PORT: process.env.USERDB_MYSQL_DOCKER_PORT,
     USERDB_MYSQL_LOCAL_PORT: process.env.USERDB_MYSQL_LOCAL_PORT,
-    // USERDB_URL: `mysql://${process.env.USERDB_MYSQL_USER}:${process.env.USERDB_MYSQL_PASSWORD}@${process.env.USERDB_MYSQL_HOST}:${process.env.USERDB_MYSQL_LOCAL_PORT}/${process.env.USERDB_MYSQL_DATABASE}`
+    AUTH_SECRET: process.env.AUTH_SECRET,
   },
 };
 
