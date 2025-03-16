@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - erik/automate-ecr-push
+    paths:
+      - 'client/**'
+      - 'chat-api/**'
 
 jobs:
   push_to_ecr:
