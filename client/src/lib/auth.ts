@@ -5,6 +5,7 @@ import GitHub from "next-auth/providers/github";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "./prisma";
 import schema from "./schema";
+import faker from "faker";
 
 const adapter = PrismaAdapter({ prisma });
 const secret = process.env.AUTH_SECRET;
@@ -58,6 +59,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const user = await prisma.user.findFirst({
           where: { email: token.email },
         });
+        token.id = user?.id;
         if (!user) {
           const newUser = await prisma.user.create({
             data: {
@@ -68,7 +70,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               githubId: token.id.toString(),
               accounts: {
                 create: {
-                  // id: token.login as string,
                   provider: token.provider as string,
                   type: token.type as string,
                   providerAccountId: token.providerAccountId as string,
@@ -76,9 +77,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               },
             },
           });
+          token.id = newUser.id;
           console.log("newUser", newUser);
         }
-        if (user) {
+        if (user && !user.githubId) {
           // update user with github info
           const updatedUser = await prisma.user.update({
             where: { id: user.id },
@@ -87,7 +89,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               image: token.image as string,
               accounts: {
                 create: {
-                  // id: token.login as string,
                   provider: token.provider as string,
                   type: token.type as string,
                   providerAccountId: token.providerAccountId as string,

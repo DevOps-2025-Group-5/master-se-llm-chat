@@ -72,3 +72,13 @@ export const getSessionInfo = async (sessionId, connection) => {
   const [rows] = await connection.query(query, [sessionId]);
   return rows;
 };
+
+export const getPersonalInfo = async (id, connection) => {
+  const query = `
+        SELECT *
+        FROM Personal
+        WHERE userId = ?
+        `;
+  const [rows] = await connection.query(query, [id]);
+  return rows;
+};

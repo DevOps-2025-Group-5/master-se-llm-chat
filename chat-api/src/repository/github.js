@@ -21,7 +21,7 @@ const authorizeGitHub = async (accessToken, clientId, clientSecret) => {
   return data;
 };
 
-export const getUserData = async (accessToken) => {
+export const getGithubUserData = async (accessToken) => {
   const response = await fetch(`https://api.github.com/user`, {
     method: "GET",
     headers: {
