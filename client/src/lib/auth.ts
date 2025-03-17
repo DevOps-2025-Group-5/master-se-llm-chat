@@ -63,16 +63,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (!user) {
           const newUser = await prisma.user.create({
             data: {
-              email: token.email,
-              name: token.name,
-              username: token.name,
-              image: token.image as string,
-              githubId: token.id.toString(),
+              email: token?.email,
+              name: token?.name,
+              username: token?.name,
+              image: token?.image as string,
+              githubId: token?.id.toString() || null,
               accounts: {
                 create: {
-                  provider: token.provider as string,
-                  type: token.type as string,
-                  providerAccountId: token.providerAccountId as string,
+                  provider: token?.provider as string,
+                  type: token?.type as string,
+                  providerAccountId: token?.providerAccountId as string,
                 },
               },
             },
@@ -85,13 +85,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           const updatedUser = await prisma.user.update({
             where: { id: user.id },
             data: {
-              githubId: token.id.toString(),
-              image: token.image as string,
+              githubId: token?.id.toString() || null,
+              image: token?.image as string,
               accounts: {
                 create: {
-                  provider: token.provider as string,
-                  type: token.type as string,
-                  providerAccountId: token.providerAccountId as string,
+                  provider: token?.provider as string,
+                  type: token?.type as string,
+                  providerAccountId: token?.providerAccountId as string,
                 },
               },
             },
