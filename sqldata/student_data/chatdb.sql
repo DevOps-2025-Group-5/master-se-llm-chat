@@ -53,14 +53,6 @@ UNLOCK TABLES;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `students` (
   `student_id` int NOT NULL,
-  `username` varchar(50) NOT NULL,
-  `first_name` varchar(50) NOT NULL,
-  `last_name` varchar(50) NOT NULL,
-  `age` int NOT NULL,
-  `gender` varchar(50) DEFAULT NULL,
-  `address` varchar(50) DEFAULT NULL,
-  `email_address` varchar(50) DEFAULT NULL,
-  `phone_number` varchar(50) DEFAULT NULL,
   `enrollment_date` date DEFAULT NULL,
   `graduation_date` date DEFAULT NULL,
   `gpa` decimal(3,2) DEFAULT NULL,
@@ -76,7 +68,17 @@ CREATE TABLE `students` (
 
 LOCK TABLES `students` WRITE;
 /*!40000 ALTER TABLE `students` DISABLE KEYS */;
-INSERT INTO `students` VALUES (1,'wluckie0','Winonah','Luckie',19,'Genderqueer','Room 1541','wluckie0@ibm.com','701-394-1788','2018-06-20','2022-02-27',2.43,'Winonah Luckie','Biology'),(2,'vshinfield1','Virge','Shinfield',23,'Male','Room 133','vshinfield1@yolasite.com','695-888-2323','2019-02-20','2024-02-02',1.48,'Virge Shinfield','Graphic Design'),(3,'amellonby2','Ashton','Mellonby',22,'Agender','Apt 565','amellonby2@addtoany.com','391-719-8157','2018-03-10','2023-04-20',0.82,'Ashton Mellonby','Journalism'),(4,'kballefant3','Kelly','Ballefant',24,'Agender','Room 1','kballefant3@princeton.edu','587-943-6202','2019-12-18','2025-01-26',0.02,'Kelly Ballefant','Urban Planning'),(5,'mkaveney4','Mellie','Kaveney',23,'Female','PO Box 84339','mkaveney4@netscape.com','480-748-0918','2019-05-11','2023-11-30',1.18,'Mellie Kaveney','Religious Studies'),(6,'dwhiles5','Dorisa','Whiles',25,'Bigender','Apt 646','dwhiles5@biglobe.ne.jp','850-130-7002','2018-03-05','2023-05-12',2.67,'Dorisa Whiles','Philosophy'),(7,'mdickon6','Maryanne','Dickon',23,'Female','Apt 1304','mdickon6@icq.com','438-147-4057','2020-04-07','2022-11-04',2.02,'Maryanne Dickon','Social Work'),(8,'lsennett7','Leta','Sennett',20,'Female','12th Floor','lsennett7@seesaa.net','897-532-5311','2019-03-10','2022-06-21',0.01,'Leta Sennett','Education'),(9,'gmungane8','Gonzales','Mungane',18,'Male','PO Box 82086','gmungane8@berkeley.edu','238-320-6360','2020-06-30','2023-10-16',2.49,'Gonzales Mungane','Biology'),(10,'rgrunson9','Reggi','Grunson',19,'Non-binary','Apt 1701','rgrunson9@4shared.com','367-601-7825','2018-02-21','2025-11-30',0.11,'Reggi Grunson','Engineering');
+INSERT INTO `students` (student_id, enrollment_date, graduation_date, gpa, advisor, major) VALUES
+(1, '2023-08-15 19:15:36', '2025-01-23 10:38:13', 1.1, 'Preston Breinl', 'Engineering'),
+(2, '2024-06-08 20:48:24', '2026-12-08 10:56:45', 1.11, 'Amargo Henrichsen', 'History'),
+(3, '2023-08-28 21:28:10', '2025-08-01 17:01:34', 1.21, 'Julius Kimpton', 'Art History'),
+(4, '2024-11-23 22:36:43', '2027-06-19 03:15:19', 0.72, 'Lauree Gertz', 'Mathematics'),
+(5, '2023-03-30 07:20:34', '2026-01-06 07:46:18', 1.82, 'Cob Meldon', 'Biology'),
+(6, '2022-12-17 14:00:03', '2025-10-26 09:03:02', 0.07, 'Mira Rape', 'History'),
+(7, '2022-04-08 17:19:58', '2025-12-11 14:01:45', 1.77, 'Drucy Skill', 'History'),
+(8, '2022-10-24 05:19:45', '2025-07-23 21:28:48', 2.9, 'Hendrick Dendle', 'History'),
+(9, '2023-06-27 08:20:20', '2025-03-23 07:42:24', 3.54, 'Moss Goodlife', 'Business Administration'),
+(10, '2023-07-29 12:22:14', '2026-10-22 18:56:42', 0.58, 'Muhammad Flecknoe', 'English Literature');
 /*!40000 ALTER TABLE `students` ENABLE KEYS */;
 UNLOCK TABLES;
 

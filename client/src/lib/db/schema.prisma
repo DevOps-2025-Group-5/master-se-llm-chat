@@ -19,6 +19,7 @@ model User {
   githubId      String?         @unique
   accounts      Account[]
   sessions      Session[]
+  personal      Personal[]
   // Optional for WebAuthn support
   Authenticator Authenticator[]
 
@@ -84,4 +85,20 @@ model Authenticator {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([userId, credentialID])
+}
+
+model Personal {
+  userId String @unique
+  age    Int?
+  gender String?
+  address String?
+  phone_number String?
+
+
+  user   User   @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
 }
