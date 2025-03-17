@@ -14,12 +14,15 @@ import { trimMessages } from "@langchain/core/messages";
 import cors from "cors";
 import { z } from "zod";
 import { dbConfig } from "./repository/studentTable.js";
-import { startConnection as userDbConnection } from "./repository/userTable.js";
+import {
+  getPersonalInfo,
+  startConnection as userDbConnection,
+} from "./repository/userTable.js";
 import { SqlDatabase } from "langchain/sql_db";
 import { DataSource } from "typeorm";
 import { QuerySqlTool } from "langchain/tools/sql";
 import { promptTemplates } from "./prompt/promptTemplates.js";
-import { getUserData } from "./repository/github.js";
+import { getGithubUserData } from "./repository/github.js";
 import { getUserData as getUserDBData } from "./repository/userTable.js";
 
 dotenv.config();
@@ -104,6 +107,7 @@ const trimmer = trimMessages({
 const InputStateAnnotation = Annotation.Root({
   question: Annotation,
   id: Annotation,
+  personalInfo: Annotation,
 });
 
 const StateAnnotation = Annotation.Root({
@@ -113,6 +117,7 @@ const StateAnnotation = Annotation.Root({
   }),
   id: Annotation,
   question: Annotation,
+  personalInfo: Annotation,
   query: Annotation,
   result: Annotation,
   answer: Annotation,
@@ -181,6 +186,7 @@ const generateAnswer = async (state) => {
     query: state.query,
     result: state.result,
     userId: state.id,
+    personalInfo: state.personalInfo,
   });
   const response = await llm.invoke(promptValue);
   return {
@@ -218,29 +224,23 @@ app.post("/chat", async (req, res) => {
   console.log(id);
 
   let userData;
-  if (provider === "github") {
-    try {
-      if (!req.headers["authorization"]) {
-        throw new Error("Authorization failed");
-      }
-      const accessToken = req.headers.authorization.split(" ")[1];
-      userData = await getUserData(accessToken);
-    } catch (error) {
-      console.error(error);
-      res.status(401).json({ message: `Authorization Failed`, error: error });
-      return;
-    }
-  } else {
-    try {
-      // const sessionToken =
-      const res = await getUserDBData(id, userDb);
-      userData = res[0];
-  
-    } catch (error) {
-      console.error(error);
-      res.status(401).json({ message: `Authorization Failed`, error: error });
-      return;
-    }
+  try {
+    // const sessionToken =
+    const res = await getUserDBData(id, userDb);
+    userData = res[0];
+  } catch (error) {
+    console.error(error);
+    res.status(401).json({ message: `Authorization Failed`, error: error });
+    return;
+  }
+
+  let personalInfo;
+  try {
+    personalInfo = await getPersonalInfo(id, userDb);
+  } catch (error) {
+    console.error(error);
+    res.status(401).json({ message: `Authorization Failed`, error: error });
+    return;
   }
 
   // Get userID from the token
@@ -250,7 +250,11 @@ app.post("/chat", async (req, res) => {
   const config = { configurable: { thread_id: parseInt(userId) } };
   try {
     const response = await llmApp.invoke(
-      { question: newMessage, id: userId },
+      {
+        question: newMessage,
+        id: userId,
+        personalInfo: JSON.stringify({personalInfo,userData}),
+      },
       config
     );
     // const responseMessage = response.messages[response.messages.length - 1];
