@@ -140,12 +140,14 @@ const queryOutput = z.object({
 const structuredLlm = llm.withStructuredOutput(queryOutput);
 
 const writeQuery = async (state) => {
+  const trimmedMessage = await trimmer.invoke(state.messages);
   const promptValue = await queryPromptTemplate.invoke({
     dialect: db.appDataSourceOptions.type,
     top_k: 10,
     table_info: await db.getTableInfo(),
     input: state.question,
     userId: state.id,
+    messages: trimmedMessage,
   });
   // const systemMessage = await queryPromptTemplate.format({
   //   dialect: db.appDataSourceOptions.type,
@@ -253,7 +255,7 @@ app.post("/chat", async (req, res) => {
       {
         question: newMessage,
         id: userId,
-        personalInfo: JSON.stringify({personalInfo,userData}),
+        personalInfo: JSON.stringify({ personalInfo, userData }),
       },
       config
     );
