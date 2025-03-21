@@ -1,3 +1,11 @@
+inputs:
+  node-version:
+    description: "The Node.js version to use"
+    required: true
+    default: "14"
+  project-path:
+    description: "The path to the project"
+    required: true
 outputs:
   node-modules-cache-hit:
     description: "node_modules cache hit result"
@@ -15,7 +23,7 @@ runs:
       env:
         cache-name: cache-node-modules
       with:
-        path: '**/node_modules'
+        path: "**/node_modules"
         key: ${{ runner.os }}-setup-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
     - if: ${{ steps.node_modules_cache_id.outputs.cache-hit != 'true' }}
       run: |
