@@ -44,7 +44,7 @@ jobs:
       - name: Check typecheck on client
         run: |
           cd client
-          npm run typecheck
+          npm run type-check
 
   lint-client:
     runs-on: ubuntu-latest
