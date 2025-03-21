@@ -1,0 +1,86 @@
+name: CI Check
+
+env:
+  NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+on:
+  workflow_call:
+    inputs:
+      need_build_result:
+        required: false
+        type: boolean
+        default: false
+  pull_request:
+    branches: ['main']
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Initialize
+        uses: ./.github/actions/develop_setup
+
+  typecheck-client:
+    runs-on: ubuntu-latest
+    needs:
+      - setup
+    steps:
+      - uses: actions/checkout@v4
+      - name: Initialize
+        uses: ./.github/actions/develop_setup
+      - name: Run typecheck
+        run: |
+          cd client
+          npm run typecheck
+
+  lint-client:
+    runs-on: ubuntu-latest
+    needs:
+      - setup
+    steps:
+      - uses: actions/checkout@v4
+      - name: Initialize
+        uses: ./.github/actions/develop_setup
+      - name: Run lint
+        run: |
+          cd client
+          npm run lint -- --max-warnings 0
+
+  build-client:
+    runs-on: ubuntu-latest
+    needs:
+      - setup
+    steps:
+      - uses: actions/checkout@v4
+      - name: Initialize
+        uses: ./.github/actions/develop_setup
+      - name: Run build
+        run: |
+          cd client
+          npm run build
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nextjs-build-result
+          path: out/
+        if: ${{ inputs.need_build_result }}
+
+  build-api:
+    runs-on: ubuntu-latest
+    needs:
+      - setup
+    steps:
+      - uses: actions/checkout@v4
+      - name: Initialize
+        uses: ./.github/actions/develop_setup
+      - name: Run build
+        run: |
+          cd chat-api
+          npm run build
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nextjs-build-result
+          path: out/
+        if: ${{ inputs.need_build_result }}

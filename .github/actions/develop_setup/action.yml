@@ -1,0 +1,22 @@
+outputs:
+  node-modules-cache-hit:
+    description: "node_modules cache hit result"
+    value: ${{ steps.node_modules_cache_id.outputs.cache-hit }}
+
+runs:
+  using: "Composite"
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version-file: .node-version
+        registry-url: https://npm.pkg.github.com/
+    - uses: actions/cache@v4
+      id: node_modules_cache_id
+      env:
+        cache-name: cache-node-modules
+      with:
+        path: '**/node_modules'
+        key: ${{ runner.os }}-setup-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+    - if: ${{ steps.node_modules_cache_id.outputs.cache-hit != 'true' }}
+      run: npm ci
+      shell: bash
