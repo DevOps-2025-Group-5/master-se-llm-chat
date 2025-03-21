@@ -11,24 +11,13 @@ on:
         type: boolean
         default: false
   pull_request:
-    branches: ['main']
+    branches: ["main"]
 
 jobs:
-  setup:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Initialize
-        uses: ./.github/actions/develop_setup
-
   typecheck-client:
     runs-on: ubuntu-latest
-    needs:
-      - setup
     steps:
       - uses: actions/checkout@v4
-      - name: Initialize
-        uses: ./.github/actions/develop_setup
       - name: Run typecheck
         run: |
           cd client
@@ -36,12 +25,8 @@ jobs:
 
   lint-client:
     runs-on: ubuntu-latest
-    needs:
-      - setup
     steps:
       - uses: actions/checkout@v4
-      - name: Initialize
-        uses: ./.github/actions/develop_setup
       - name: Run lint
         run: |
           cd client
@@ -49,12 +34,8 @@ jobs:
 
   build-client:
     runs-on: ubuntu-latest
-    needs:
-      - setup
     steps:
       - uses: actions/checkout@v4
-      - name: Initialize
-        uses: ./.github/actions/develop_setup
       - name: Run build
         run: |
           cd client
@@ -68,12 +49,8 @@ jobs:
 
   build-api:
     runs-on: ubuntu-latest
-    needs:
-      - setup
     steps:
       - uses: actions/checkout@v4
-      - name: Initialize
-        uses: ./.github/actions/develop_setup
       - name: Run build
         run: |
           cd chat-api
