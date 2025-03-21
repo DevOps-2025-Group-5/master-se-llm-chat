@@ -42,7 +42,6 @@ const datasource = new DataSource({
 const db = await SqlDatabase.fromDataSourceParams({
   appDataSource: datasource,
 });
-
 const userDb = await userDbConnection();
 if (!db || !userDb) {
   throw new Error("Database connection failed");

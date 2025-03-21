@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "type-check": "tsc --noEmit",
     "db:migrate": "npx prisma migrate dev",
     "db:studio": "USERDB_URL=mysql://root:rootpassword@localhost:3307/userdb npx prisma studio",
     "db:generate": "npx prisma generate",
