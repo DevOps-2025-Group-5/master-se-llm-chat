@@ -14,10 +14,21 @@ on:
     branches: ["main"]
 
 jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Initialize
+        uses: ./.github/actions/develop_setup
+
   typecheck-client:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Initialize
+        uses: ./.github/actions/develop_setup
+        with:
+          project-path: client
       - name: Check typecheck on client
         run: |
           cd client
@@ -27,6 +38,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Initialize
+        uses: ./.github/actions/develop_setup
+        with:
+          project-path: client
       - name: Check lint on client
         run: |
           cd client
@@ -36,6 +51,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Initialize
+        uses: ./.github/actions/develop_setup
+        with:
+          project-path: client
       - name: Check build on client
         run: |
           cd client
@@ -51,6 +70,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Initialize
+        uses: ./.github/actions/develop_setup
+        with:
+          project-path: chat-api
       - name: Check build on api
         run: |
           cd chat-api
