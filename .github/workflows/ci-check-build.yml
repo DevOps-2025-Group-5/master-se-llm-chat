@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Run typecheck
+      - name: Check typecheck on client
         run: |
           cd client
           npm run typecheck
@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Run lint
+      - name: Check lint on client
         run: |
           cd client
           npm run lint -- --max-warnings 0
@@ -36,7 +36,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Run build
+      - name: Check build on client
         run: |
           cd client
           npm run build
@@ -51,10 +51,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Run build
+      - name: Check build on api
         run: |
           cd chat-api
-          npm run build
+          npm run start
 
       - uses: actions/upload-artifact@v4
         with:
