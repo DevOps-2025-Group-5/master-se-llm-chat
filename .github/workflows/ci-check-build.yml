@@ -1,8 +1,5 @@
 name: CI Check
 
-env:
-  NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
 on:
   workflow_call:
     inputs:
@@ -12,6 +9,21 @@ on:
         default: false
   pull_request:
     branches: ["main"]
+
+env:
+  MYSQL_DATABASE: chatdb
+  MYSQL_LOCAL_PORT: 3306
+  MYSQL_DOCKER_PORT: 3306
+  NODE_PORT: 5005
+  MYSQL_USER: chatuser
+  CLIENT_PORT: 3000
+  USERDB_MYSQL_DATABASE: userdb
+  USERDB_MYSQL_LOCAL_PORT: 3307
+  USERDB_MYSQL_DOCKER_PORT: 3306
+  USERDB_MYSQL_USER: userdbuser
+  BACKEND_ENTRYPOINT: http://localhost
+  CORS_ORIGIN: http://localhost:3000
+  NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
   # setup:
@@ -47,40 +59,56 @@ jobs:
           cd client
           npm run lint -- --max-warnings 0
 
-  build-client:
+  build:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      - name: Initialize
-        uses: ./.github/actions/develop_setup
-        with:
-          project-path: client
-      - name: Check build on client
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Check that .env File does not exist yet
         run: |
-          cd client
-          npm run build
+          if [ -f .env ]; then
+            echo "❌ ERROR: .env file found!"
+            exit 1
+          fi
+          echo "✅ .env file not found. Proceeding..."
 
-      - uses: actions/upload-artifact@v4
-        with:
-          name: nextjs-build-result
-          path: out/
-        if: ${{ inputs.need_build_result }}
-
-  build-api:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Initialize
-        uses: ./.github/actions/develop_setup
-        with:
-          project-path: chat-api
-      - name: Check build on api
+      - name: Install Docker Compose
         run: |
-          cd chat-api
-          npm run start
+          sudo apt-get update
+          sudo apt-get install -y docker-compose
+          docker-compose --version
 
-      - uses: actions/upload-artifact@v4
-        with:
-          name: nextjs-build-result
-          path: out/
-        if: ${{ inputs.need_build_result }}
+      - name: Create Temporary .env File
+        run: |
+          echo "MYSQL_DATABASE=${MYSQL_DATABASE}" >> .env
+          echo "MYSQL_LOCAL_PORT=${MYSQL_LOCAL_PORT}" >> .env
+          echo "MYSQL_DOCKER_PORT=${MYSQL_DOCKER_PORT}" >> .env
+          echo "NODE_PORT=${NODE_PORT}" >> .env
+          echo "MYSQL_USER=${MYSQL_USER}" >> .env
+          echo "CLIENT_PORT=${CLIENT_PORT}" >> .env
+          echo "MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }}" >> .env
+          echo "AUTH_SECRET=${{ secrets.AUTH_SECRET }}" >> .env
+          echo "USERDB_MYSQL_DATABASE=${USERDB_MYSQL_DATABASE}" >> .env
+          echo "USERDB_MYSQL_LOCAL_PORT=${USERDB_MYSQL_LOCAL_PORT}" >> .env
+          echo "USERDB_MYSQL_DOCKER_PORT=${USERDB_MYSQL_DOCKER_PORT}" >> .env
+          echo "USERDB_MYSQL_USER=${USERDB_MYSQL_USER}" >> .env
+          echo "USERDB_MYSQL_ROOT_PASSWORD=${{ secrets.USERDB_MYSQL_ROOT_PASSWORD }}" >> .env
+          echo "USERDB_MYSQL_PASSWORD=${{ secrets.USERDB_MYSQL_PASSWORD }}" >> .env
+          echo "MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}" >> .env
+          echo "BACKEND_ENTRYPOINT=${BACKEND_ENTRYPOINT}" >> .env
+          echo "CORS_ORIGIN=${CORS_ORIGIN}" >> .env
+          echo "✅ .env file created."
+
+      - name: Build and Start Services
+        run: docker-compose --env-file .env up -d --build
+
+      - name: Show Running Containers
+        run: docker ps
+
+      - name: Stop Services
+        run: docker-compose down
