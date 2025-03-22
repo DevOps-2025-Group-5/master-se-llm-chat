@@ -25,10 +25,10 @@ cp .env-sample .env
 npx auth 
 ```
 
-5. Add your OpenAI API key and GitHub OAuth to the `.env` file:
+5. Add/modify the AUTH secret and other necessary secrets in `.env` file:
 
 ```
-OPENAI_API_KEY=your-api-key
+OPENAI_API_KEY=your key
 AUTH_GITHUB_ID=your-github-auth-id
 AUTH_GITHUB_SECRET=your-github-auth-secret
 ```
@@ -41,6 +41,13 @@ You can also request the key from Roman.
 6. Start the container:
 
 ```bash
-docker-compose up -build
+docker-compose up --build
+```
+
+7. After successful build, you can migrate and seed the user database by running:
+
+```bash
+docker exec -it master-se-llm-chat-chat-client-1 sh
+npm run db:reset
 ```
 
